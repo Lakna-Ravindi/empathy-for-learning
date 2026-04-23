@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7.0
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin123
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  redis:
+    image: redis:7.0-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  api-gateway:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      MONGODB_URL: mongodb://admin:admin123@mongodb:27017
+      MONGODB_DB_NAME: empathy_db
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: dev-secret-key
+      ENVIRONMENT: development
+    depends_on:
+      - mongodb
+      - redis
+
+volumes:
+  mongo_data:
+  redis_data:

@@ -1,0 +1,29 @@
+[tool.poetry]
+name = "empathy-for-learning-backend"
+version = "0.1.0"
+description = "UNESCO SEEK-based emotional support chatbot"
+authors = ["Team <dev@example.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.104.1"
+uvicorn = {version = "^0.24.0", extras = ["standard"]}
+pydantic = "^2.5.0"
+pydantic-settings = "^2.1.0"
+pymongo = "^4.6.0"
+redis = "^5.0.1"
+boto3 = "^1.34.2"
+python-dotenv = "^1.0.0"
+bcrypt = "^4.1.1"
+PyJWT = "^2.8.1"
+email-validator = "^2.1.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.3"
+pytest-asyncio = "^0.21.1"
+black = "^23.12.0"
+flake8 = "^6.1.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
