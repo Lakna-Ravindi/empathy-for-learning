@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from routes.auth_routes import router
+from app.routes.auth_routes import router
 import logging
 
 # Configure logging
