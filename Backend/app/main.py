@@ -1,13 +1,107 @@
-from fastapi import FastAPI
-from app.routes.auth_routes import router
+from fastapi import FastAPI, Request, status
+from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
+from app.routes.auth_routes import router as auth_router
+from app.core.config import CORS_ORIGINS, logger, configure_logging
 import logging
 
 # Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+logger = configure_logging()
+
+app = FastAPI(
+    title="Empathy for Learning API",
+    description="Backend API for the Empathy for Learning platform",
+    version="1.0.0"
 )
 
-app = FastAPI()
+# ============= CORS Middleware =============
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=CORS_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-app.include_router(router, prefix="/auth")
+
+# ============= Error Handlers =============
+
+@app.exception_handler(status.HTTP_401_UNAUTHORIZED)
+async def unauthorized_exception_handler(request: Request, exc: Exception):
+    """Handle 401 Unauthorized errors"""
+    logger.warning(f"Unauthorized access attempt: {request.url}")
+    return JSONResponse(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        content={
+            "detail": "Unauthorized - Please provide valid credentials",
+            "status": "error"
+        }
+    )
+
+
+@app.exception_handler(status.HTTP_403_FORBIDDEN)
+async def forbidden_exception_handler(request: Request, exc: Exception):
+    """Handle 403 Forbidden errors"""
+    logger.warning(f"Forbidden access attempt: {request.url}")
+    return JSONResponse(
+        status_code=status.HTTP_403_FORBIDDEN,
+        content={
+            "detail": "Forbidden - You don't have permission to access this resource",
+            "status": "error"
+        }
+    )
+
+
+@app.exception_handler(Exception)
+async def general_exception_handler(request: Request, exc: Exception):
+    """Handle 500 Internal Server errors"""
+    logger.error(f"Unhandled exception: {str(exc)}", exc_info=True)
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={
+            "detail": "Internal server error - Please try again later",
+            "status": "error"
+        }
+    )
+
+
+# ============= Health Check =============
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint"""
+    return {
+        "status": "healthy",
+        "message": "API is running"
+    }
+
+
+# ============= Route Inclusion =============
+
+app.include_router(
+    auth_router,
+    prefix="/api/auth",
+    tags=["Authentication"]
+)
+
+
+# ============= Root Endpoint =============
+
+@app.get("/")
+async def root():
+    """Root endpoint"""
+    return {
+        "message": "Welcome to Empathy for Learning API",
+        "docs": "/docs",
+        "openapi": "/openapi.json"
+    }
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(
+        "app.main:app",
+        host="0.0.0.0",
+        port=8000,
+        reload=True
+    )

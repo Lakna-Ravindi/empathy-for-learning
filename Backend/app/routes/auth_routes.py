@@ -1,31 +1,111 @@
 # app/routes/auth_routes.py
-from fastapi import APIRouter, HTTPException
-from app.models.user_models import UserRegister
-from app.models.auth_models import UserLogin
-from app.services.auth_service import register_user, login_user
+from fastapi import APIRouter, HTTPException, status, Depends
+from app.models.user_models import UserRegister, UserResponse
+from app.models.auth_models import UserLogin, TokenResponse, TokenRefreshRequest, CurrentUser
+from app.services.auth_service import register_user, login_user, refresh_access_token, logout_user
+from app.dependencies.auth_dependency import get_current_user
+from app.core.validators import ValidationError
+import logging
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-@router.post("/register")
+
+@router.post("/register", response_model=dict)
 def register(user: UserRegister):
-    success, message = register_user(user.dict())
+    """Register a new user with validation"""
+    try:
+        success, message = register_user(user.dict())
 
-    if not success:
-        raise HTTPException(status_code=400, detail=message)
+        if not success:
+            raise HTTPException(status_code=400, detail=message)
 
-    return {"message": message}
+        return {"message": message, "status": "success"}
+
+    except ValidationError as e:
+        logger.warning(f"Validation error during registration: {str(e)}")
+        raise HTTPException(status_code=422, detail=str(e))
+    except Exception as e:
+        logger.error(f"Registration error: {str(e)}")
+        raise HTTPException(status_code=500, detail="An error occurred during registration")
 
 
-@router.post("/login")
+@router.post("/login", response_model=TokenResponse)
 def login(user: UserLogin):
-    token, db_user = login_user(user.email, user.password)
+    """Login user and return access and refresh tokens"""
+    try:
+        tokens, db_user = login_user(user.email, user.password)
 
-    if not token:
-        raise HTTPException(status_code=400, detail=db_user)
+        if not tokens:
+            logger.warning(f"Failed login attempt for: {user.email}")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=db_user,  # db_user contains the error message
+            )
 
+        return TokenResponse(
+            access_token=tokens["access_token"],
+            refresh_token=tokens["refresh_token"],
+            token_type="bearer",
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Login error: {str(e)}")
+        raise HTTPException(status_code=500, detail="An error occurred during login")
+
+
+@router.post("/refresh", response_model=TokenResponse)
+def refresh(request: TokenRefreshRequest):
+    """Refresh access token using refresh token"""
+    try:
+        new_access_token, message = refresh_access_token(request.refresh_token)
+
+        if not new_access_token:
+            logger.warning("Failed refresh token attempt")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=message,
+            )
+
+        return TokenResponse(
+            access_token=new_access_token,
+            token_type="bearer",
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Refresh token error: {str(e)}")
+        raise HTTPException(status_code=500, detail="An error occurred during token refresh")
+
+
+@router.post("/logout", response_model=dict)
+def logout(current_user: CurrentUser = Depends(get_current_user), request = None):
+    """Logout user and revoke token"""
+    try:
+        # Note: Token revocation is tracked in the database
+        # The actual token extraction happens in get_current_user dependency
+        # For full logout, the client should discard the token
+        success, message = logout_user("", current_user.email)
+
+        if not success:
+            raise HTTPException(status_code=400, detail=message)
+
+        logger.info(f"User logged out: {current_user.email}")
+        return {"message": message, "status": "success"}
+
+    except Exception as e:
+        logger.error(f"Logout error: {str(e)}")
+        raise HTTPException(status_code=500, detail="An error occurred during logout")
+
+
+@router.get("/me", response_model=dict)
+def get_current_user_info(current_user: CurrentUser = Depends(get_current_user)):
+    """Get current authenticated user info"""
     return {
-        "access_token": token,
-        "token_type": "bearer",
-        "fullName": db_user["fullName"],
-        "role": db_user["role"]
+        "email": current_user.email,
+        "role": current_user.role,
     }
