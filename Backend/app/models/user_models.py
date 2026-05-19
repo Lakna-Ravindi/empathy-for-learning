@@ -2,6 +2,7 @@
 from pydantic import BaseModel, EmailStr, Field, field_validator
 from typing import Optional
 from app.core.validators import validate_password, validate_phone_number, validate_district
+from app.models.profile_models import EducationLevelEnum, DistrictEnum
 
 
 class UserRegister(BaseModel):
@@ -9,10 +10,10 @@ class UserRegister(BaseModel):
     email: EmailStr
     phoneNumber: str = Field(..., description="Sri Lankan phone format: +94XXXXXXXXX")
     password: str = Field(..., min_length=8, description="Must include uppercase, lowercase, numbers, and symbols")
-    educationLevel: str
-    ageGroup: str
+    educationLevel: EducationLevelEnum = Field(..., description="Education level")
+    age: int = Field(..., ge=1, le=120, description="Age in years")
     schoolOrUniversity: Optional[str] = None
-    district: Optional[str] = None
+    district: DistrictEnum = Field(..., description="District of residence")
     privacyConsent: bool = Field(..., description="Must be true to register")
 
     @field_validator("password")
@@ -25,13 +26,6 @@ class UserRegister(BaseModel):
     @classmethod
     def validate_phone(cls, v):
         validate_phone_number(v)
-        return v
-
-    @field_validator("district")
-    @classmethod
-    def validate_district_field(cls, v):
-        if v:
-            validate_district(v)
         return v
 
     @field_validator("privacyConsent")
@@ -47,11 +41,10 @@ class UserResponse(BaseModel):
     fullName: str
     email: EmailStr
     phoneNumber: str
-    educationLevel: str
-    ageGroup: str
+    educationLevel: EducationLevelEnum
+    age: int
     schoolOrUniversity: Optional[str] = None
-    district: Optional[str] = None
-    role: str
+    district: DistrictEnum
 
     class Config:
         from_attributes = True

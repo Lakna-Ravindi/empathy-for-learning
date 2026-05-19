@@ -65,17 +65,6 @@ async def general_exception_handler(request: Request, exc: Exception):
     )
 
 
-# ============= Health Check =============
-
-@app.get("/health")
-async def health_check():
-    """Health check endpoint"""
-    return {
-        "status": "healthy",
-        "message": "API is running"
-    }
-
-
 # ============= Route Inclusion =============
 
 app.include_router(

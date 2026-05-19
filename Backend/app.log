@@ -9,3 +9,10 @@ Traceback (most recent call last):
 AttributeError: module 'bcrypt' has no attribute '__about__'
 2026-05-18 15:12:05,644 - app.services.auth_service - INFO - New user registered: john@example.com
 2026-05-18 15:12:11,823 - app.services.auth_service - INFO - User logged in: john@example.com
+2026-05-19 14:53:35,966 - passlib.handlers.bcrypt - WARNING - (trapped) error reading bcrypt version
+Traceback (most recent call last):
+  File "d:\Empathy-Project\Backend\.venv\Lib\site-packages\passlib\handlers\bcrypt.py", line 620, in _load_backend_mixin
+    version = _bcrypt.__about__.__version__
+              ^^^^^^^^^^^^^^^^^
+AttributeError: module 'bcrypt' has no attribute '__about__'
+2026-05-19 14:53:36,331 - app.services.auth_service - INFO - User logged in: john@example.com
