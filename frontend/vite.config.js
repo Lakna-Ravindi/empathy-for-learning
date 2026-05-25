@@ -11,8 +11,8 @@ export default defineConfig({
     port: 5173,
     strictPort: true,
   },
-  optimizeDeps: {
+  /*optimizeDeps: {
     force: true
   },
-  cacheDir: 'node_modules/.vite_cache'  // ← Different cache folder name fixes the lock
+  cacheDir: 'node_modules/.vite_cache'  // ← Different cache folder name fixes the lock*/
 })

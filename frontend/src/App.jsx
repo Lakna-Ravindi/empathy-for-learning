@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
+import RegistrationPage from "./pages/RegistrationPage";
 import DashboardPage from "./pages/DashboardPage";
 import ChatPage from "./pages/ChatPage";
 import AssessmentPage from "./pages/AssessmentPage";
@@ -12,6 +13,7 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegistrationPage />} />
         <Route element={<PrivateRoute />}>
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/chat" element={<ChatPage />} />
@@ -19,7 +21,7 @@ export default function App() {
           <Route path="/quiz" element={<QuizPage />} />
           <Route path="/progress" element={<ProgressReportPage />} />
         </Route>
-        <Route path="*" element={<Navigate to="/login" />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>
   );
