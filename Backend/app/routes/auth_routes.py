@@ -35,10 +35,10 @@ def register(user: UserRegister):
 def login(user: UserLogin):
     """Login user and return access and refresh tokens"""
     try:
-        tokens, db_user = login_user(user.email, user.password)
+        tokens, db_user = login_user(user.username, user.password)
 
         if not tokens:
-            logger.warning(f"Failed login attempt for: {user.email}")
+            logger.warning(f"Failed login attempt for: {user.username}")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail=db_user,  # db_user contains the error message
@@ -89,12 +89,12 @@ def logout(current_user: CurrentUser = Depends(get_current_user), request = None
         # Note: Token revocation is tracked in the database
         # The actual token extraction happens in get_current_user dependency
         # For full logout, the client should discard the token
-        success, message = logout_user("", current_user.email)
+        success, message = logout_user("", current_user.username)
 
         if not success:
             raise HTTPException(status_code=400, detail=message)
 
-        logger.info(f"User logged out: {current_user.email}")
+        logger.info(f"User logged out: {current_user.username}")
         return {"message": message, "status": "success"}
 
     except Exception as e:
@@ -106,6 +106,6 @@ def logout(current_user: CurrentUser = Depends(get_current_user), request = None
 def get_current_user_info(current_user: CurrentUser = Depends(get_current_user)):
     """Get current authenticated user info"""
     return {
-        "email": current_user.email,
+        "username": current_user.username,
         "role": current_user.role,
     }

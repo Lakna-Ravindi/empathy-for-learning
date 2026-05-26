@@ -1,10 +1,9 @@
-# app/models/auth_models.py
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 from typing import Optional
 
 
 class UserLogin(BaseModel):
-    email: EmailStr
+    username: str
     password: str
 
 
@@ -22,7 +21,7 @@ class TokenRefreshRequest(BaseModel):
 
 class TokenPayload(BaseModel):
     """JWT token payload"""
-    email: str
+    username: str
     role: str
     type: str  # "access" or "refresh"
     exp: Optional[int] = None
@@ -30,5 +29,5 @@ class TokenPayload(BaseModel):
 
 class CurrentUser(BaseModel):
     """Current authenticated user model"""
-    email: EmailStr
+    username: str
     role: str

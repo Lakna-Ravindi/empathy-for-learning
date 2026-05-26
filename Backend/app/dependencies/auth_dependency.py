@@ -33,7 +33,7 @@ async def get_current_user(credentials = Depends(security)) -> CurrentUser:
     # Check if token is revoked
     revoked = revoked_tokens_collection.find_one({"token": token})
     if revoked:
-        logger.warning(f"Revoked token used: {payload.get('email')}")
+        logger.warning(f"Revoked token used: {payload.get('username')}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token has been revoked",
@@ -50,10 +50,10 @@ async def get_current_user(credentials = Depends(security)) -> CurrentUser:
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    email = payload.get("email")
+    username = payload.get("username")
     role = payload.get("role")
 
-    if not email or not role:
+    if not username or not role:
         logger.warning("Token payload missing required fields")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -61,7 +61,7 @@ async def get_current_user(credentials = Depends(security)) -> CurrentUser:
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    return CurrentUser(email=email, role=role)
+    return CurrentUser(username=username, role=role)
 
 
 async def get_current_admin(
