@@ -7,17 +7,17 @@ export default function LoginPage() {
   const setAuth = useAuthStore((state) => state.setAuth);
 
   const [formData, setFormData] = useState({
-    email: "", password: "", role: "student", rememberMe: false,
-  });
+  username: "", password: "", role: "student", rememberMe: false, });
+
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   const validate = () => {
-    const e = {};
-    if (!formData.email.trim()) e.email = "Email is required";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
-      e.email = "Enter a valid email address";
+  const e = {};
+    if (!formData.username.trim()) e.username = "Username is required";
+    else if (formData.username.trim().length < 3)
+      e.username = "Username must be at least 3 characters";
     if (!formData.password) e.password = "Password is required";
     else if (formData.password.length < 8)
       e.password = "Password must be at least 8 characters";
@@ -37,7 +37,7 @@ export default function LoginPage() {
     setSubmitting(true);
     // TODO: replace with real API — authApi.login(formData)
     setTimeout(() => {
-      setAuth("mock-token", { email: formData.email }, formData.role);
+      setAuth("mock-token", { username: formData.username }, formData.role);
       setSubmitting(false);
       navigate("/dashboard");
     }, 1200);
@@ -97,22 +97,30 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* user Name */}
+            {/* User Name */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">User Name</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  {/* Person icon — matches RegistrationPage */}
                   <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
                 </div>
-                <input type="email" name="email" value={formData.email} onChange={handleChange}
-                  placeholder="your User Name"
-                  className={`w-full pl-10 pr-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-sm ${
-                    errors.email ? "border-red-400 bg-red-50" : "border-gray-200 hover:border-gray-300"
-                  }`} />
+                <input
+                  type="text"
+                  name="username"
+                  value={formData.username}
+                  onChange={handleChange}
+                  placeholder="Enter your username"
+                  className={`w-full pl-10 pr-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-2 
+                    focus:ring-indigo-500 transition-all text-sm ${
+                    errors.username ? "border-red-400 bg-red-50" : "border-gray-200 hover:border-gray-300"
+                  }`}
+                />
               </div>
-              {errors.email && <p className="text-red-500 text-xs mt-1">⚠ {errors.email}</p>}
+              {errors.username && <p className="text-red-500 text-xs mt-1">⚠ {errors.username}</p>}
             </div>
 
             {/* Password */}
