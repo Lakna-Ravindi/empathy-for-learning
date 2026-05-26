@@ -97,9 +97,9 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* Email */}
+            {/* user Name */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Email Address</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">User Name</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -107,7 +107,7 @@ export default function LoginPage() {
                   </svg>
                 </div>
                 <input type="email" name="email" value={formData.email} onChange={handleChange}
-                  placeholder="your.email@example.com"
+                  placeholder="your User Name"
                   className={`w-full pl-10 pr-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-sm ${
                     errors.email ? "border-red-400 bg-red-50" : "border-gray-200 hover:border-gray-300"
                   }`} />

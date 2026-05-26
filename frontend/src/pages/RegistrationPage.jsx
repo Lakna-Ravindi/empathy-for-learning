@@ -130,7 +130,7 @@ export default function RegistrationPage() {
             {/* Full Name */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Full Name <span className="text-red-500">*</span>
+                User Name <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <FieldIcon>
@@ -139,12 +139,12 @@ export default function RegistrationPage() {
                   </svg>
                 </FieldIcon>
                 <input type="text" name="fullName" value={formData.fullName} onChange={handleChange}
-                  placeholder="Enter your full name" className={inputCls(errors.fullName)} />
+                  placeholder="Enter your user name" className={inputCls(errors.fullName)} />
               </div>
               <InputError msg={errors.fullName} />
             </div>
 
-            {/* Email */}
+            {/* Email 
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Email Address <span className="text-red-500">*</span>
@@ -159,9 +159,9 @@ export default function RegistrationPage() {
                   placeholder="your.email@example.com" className={inputCls(errors.email)} />
               </div>
               <InputError msg={errors.email} />
-            </div>
+            </div>*/}
 
-            {/* Phone */}
+            {/* Phone 
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Phone Number <span className="text-red-500">*</span>
@@ -176,7 +176,7 @@ export default function RegistrationPage() {
                   placeholder="+94 71 234 5678" className={inputCls(errors.phoneNumber)} />
               </div>
               <InputError msg={errors.phoneNumber} />
-            </div>
+            </div>*/}
 
             {/* Passwords */}
             <div className="grid md:grid-cols-2 gap-5">
@@ -223,7 +223,7 @@ export default function RegistrationPage() {
               </div>
             </div>
 
-            {/* Education + Age */}
+            {/* Education + Age
             <div className="grid md:grid-cols-2 gap-5">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -242,8 +242,8 @@ export default function RegistrationPage() {
                   </select>
                   <ChevronDown />
                 </div>
-              </div>
-
+              </div> */}
+            
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Age Group <span className="text-red-500">*</span>
@@ -264,9 +264,9 @@ export default function RegistrationPage() {
                   <ChevronDown />
                 </div>
               </div>
-            </div>
+            {/*</div>*/}
 
-            {/* School + District */}
+            {/* School + District 
             <div className="grid md:grid-cols-2 gap-5">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -304,7 +304,7 @@ export default function RegistrationPage() {
                   <ChevronDown />
                 </div>
               </div>
-            </div>
+            </div>*/}
 
             {/* Terms */}
             <div className={`rounded-xl p-4 border-2 transition-colors ${
