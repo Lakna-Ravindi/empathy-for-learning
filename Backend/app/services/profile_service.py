@@ -6,7 +6,7 @@ from app.core.validators import ValidationError
 
 
 async def update_user_profile(user_id: str, profile_data: ProfileUpdate) -> dict:
-    """Update user profile with education level, age, district, or schoolOrUniversity"""
+    """Update user profile with age group"""
     try:
         # Validate ObjectId
         if not ObjectId.is_valid(user_id):
@@ -14,12 +14,8 @@ async def update_user_profile(user_id: str, profile_data: ProfileUpdate) -> dict
         
         # Build update data - only include fields that are not None
         update_dict = {}
-        if profile_data.educationLevel is not None:
-            update_dict["educationLevel"] = profile_data.educationLevel
-        if profile_data.age is not None:
-            update_dict["age"] = profile_data.age
-        if profile_data.district is not None:
-            update_dict["district"] = profile_data.district
+        if profile_data.ageGroup is not None:
+            update_dict["ageGroup"] = profile_data.ageGroup
         
         # If no fields to update
         if not update_dict:

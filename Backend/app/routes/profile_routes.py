@@ -18,9 +18,7 @@ async def get_current_user_profile(current_user: dict = Depends(get_current_user
     try:
         user_profile = await get_user_profile(str(current_user["_id"]))
         return ProfileResponse(
-            educationLevel=user_profile.get("educationLevel"),
-            age=user_profile.get("age"),
-            district=user_profile.get("district")
+            ageGroup=user_profile.get("ageGroup")
         )
     except ValidationError as e:
         raise HTTPException(
@@ -39,10 +37,7 @@ async def update_current_user_profile(
     Requires authentication.
     
     Validation Rules:
-    - At least 1 field required (educationLevel, age, or district)
-    - educationLevel: must be valid enum (O-Levels, A-Levels, Undergraduate, Other)
-    - age: 1-120 years
-    - district: must be valid Sri Lanka district
+    - ageGroup: must be valid enum (Below 16 years, 16–18 years, 19–21 years, 22-25 years, 26+ years)
     """
     try:
         updated_user = await update_user_profile(str(current_user["_id"]), profile_data)
@@ -51,9 +46,7 @@ async def update_current_user_profile(
             "user": {
                 "fullName": updated_user.get("fullName"),
                 "email": updated_user.get("email"),
-                "educationLevel": updated_user.get("educationLevel"),
-                "age": updated_user.get("age"),
-                "district": updated_user.get("district")
+                "ageGroup": updated_user.get("ageGroup")
             }
         }
     except ValidationError as e:
