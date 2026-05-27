@@ -1,66 +1,67 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-
-const sriLankaDistricts = [
-  "Colombo","Gampaha","Kalutara","Kandy","Matale","Nuwara Eliya",
-  "Galle","Matara","Hambantota","Jaffna","Kilinochchi","Mannar",
-  "Mullaitivu","Vavuniya","Puttalam","Kurunegala","Anuradhapura",
-  "Polonnaruwa","Badulla","Monaragala","Ratnapura","Kegalle",
-  "Trincomalee","Batticaloa","Ampara",
-];
+import { useAuth } from "../hooks/useAuth";
 
 const InputError = ({ msg }) =>
   msg ? <p className="text-red-500 text-xs mt-1">⚠ {msg}</p> : null;
 
 export default function RegistrationPage() {
   const navigate = useNavigate();
+  const { register, loading, error, setError } = useAuth();
 
   const [formData, setFormData] = useState({
-    fullName: "", email: "", phoneNumber: "",
-    password: "", confirmPassword: "",
-    educationLevel: "al", ageGroup: "16-18",
-    schoolName: "", district: "", agreeToTerms: false,
+    fullName: "", password: "", confirmPassword: "",
+    ageGroup: "16–18 years", agreeToTerms: false,
   });
   const [errors, setErrors] = useState({});
-  const [submitting, setSubmitting] = useState(false);
   const [showPw, setShowPw] = useState(false);
   const [showCpw, setShowCpw] = useState(false);
 
-  const validate = () => {
-    const e = {};
-    if (!formData.fullName.trim()) e.fullName = "Full name is required";
-    else if (formData.fullName.trim().length < 3) e.fullName = "Name must be at least 3 characters";
-    if (!formData.email.trim()) e.email = "Email is required";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) e.email = "Enter a valid email address";
-    if (!formData.phoneNumber.trim()) e.phoneNumber = "Phone number is required";
-    else if (!/^(\+94|0)?[0-9]{9,10}$/.test(formData.phoneNumber.replace(/\s/g, "")))
-      e.phoneNumber = "Enter a valid Sri Lankan phone number";
-    if (!formData.password) e.password = "Password is required";
-    else if (formData.password.length < 8) e.password = "At least 8 characters";
-    else if (formData.password.length > 12) e.password = "At most 12 characters";
-    else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.password))
-      e.password = "Must include uppercase, lowercase, and number";
-    if (formData.password !== formData.confirmPassword) e.confirmPassword = "Passwords do not match";
-    if (!formData.agreeToTerms) e.agreeToTerms = "You must agree to the terms";
-    setErrors(e);
-    return Object.keys(e).length === 0;
-  };
+const validate = () => {
+  const e = {};
+
+  if (!formData.fullName.trim())
+    e.fullName = "Username is required";
+  else if (formData.fullName.trim().length < 3)
+    e.fullName = "At least 3 characters";
+  else if (formData.fullName.trim().length > 50)
+    e.fullName = "At most 50 characters";
+
+  if (!formData.password)
+    e.password = "Password is required";
+  else if (formData.password.length < 8)
+    e.password = "At least 8 characters";
+  else if (!/(?=.*[a-z])/.test(formData.password))
+    e.password = "Must include a lowercase letter";
+  else if (!/(?=.*[A-Z])/.test(formData.password))
+    e.password = "Must include an uppercase letter";
+  else if (!/(?=.*\d)/.test(formData.password))
+    e.password = "Must include a number";
+  else if (!/(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])/.test(formData.password))
+    e.password = "Must include a symbol (e.g. !@#$%^&*)";  // ← NEW — backend requires this
+
+  if (formData.password !== formData.confirmPassword)
+    e.confirmPassword = "Passwords do not match";
+
+  if (!formData.agreeToTerms)
+    e.agreeToTerms = "You must agree to the terms";
+
+  setErrors(e);
+  return Object.keys(e).length === 0;
+};
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData((p) => ({ ...p, [name]: type === "checkbox" ? checked : value }));
     if (errors[name]) setErrors((p) => { const n = { ...p }; delete n[name]; return n; });
+    if (error) setError(null);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
-    setSubmitting(true);
-    // TODO: replace with authApi.register(formData)
-    setTimeout(() => {
-      setSubmitting(false);
-      navigate("/login");
-    }, 1200);
+    // useAuth.register() handles API call → navigates to /login on success
+    await register(formData);
   };
 
   const inputCls = (hasErr) =>
@@ -117,9 +118,19 @@ export default function RegistrationPage() {
         {/* Card */}
         <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-10">
 
+          {/* ❌ API error banner */}
+          {error && (
+            <div className="mb-5 p-3 bg-red-50 border border-red-200 rounded-xl flex items-center gap-2">
+              <svg className="w-5 h-5 text-red-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p className="text-red-700 text-sm font-medium">{error}</p>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-5">
 
-            {/* Full Name */}
+            {/* Username */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 User Name <span className="text-red-500">*</span>
@@ -135,7 +146,7 @@ export default function RegistrationPage() {
               </div>
               <InputError msg={errors.fullName} />
             </div>
-            
+
             {/* Passwords */}
             <div className="grid md:grid-cols-2 gap-5">
               <div>
@@ -149,7 +160,7 @@ export default function RegistrationPage() {
                     </svg>
                   </FieldIcon>
                   <input type={showPw ? "text" : "password"} name="password"
-                    value={formData.password} onChange={handleChange} placeholder="8-12 characters"
+                    value={formData.password} onChange={handleChange} placeholder="e.g. MyPass1!"
                     className={`${inputCls(errors.password)} pr-12`} />
                   <button type="button" onClick={() => setShowPw(!showPw)}
                     className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600">
@@ -181,30 +192,27 @@ export default function RegistrationPage() {
               </div>
             </div>
 
-            {/* Age*/}
-            
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Age Group <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <FieldIcon>
-                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                  </FieldIcon>
-                  <select name="ageGroup" value={formData.ageGroup} onChange={handleChange} className={selectCls}>
-                    <option value="Below16">Below 16 years</option>
-                    <option value="16-18">16–18 years</option>
-                    <option value="19-21">19–21 years</option>
-                    <option value="22-25">22-25 years</option>
-                    <option value="26+">26+ years</option>
-                  </select>
-                  <ChevronDown />
-                </div>
+            {/* Age Group */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Age Group <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <FieldIcon>
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </FieldIcon>
+                <select name="ageGroup" value={formData.ageGroup} onChange={handleChange} className={selectCls}>
+                  <option value="Below 16 years">Below 16 years</option>
+                  <option value="16–18 years">16–18 years</option>
+                  <option value="19–21 years">19–21 years</option>
+                  <option value="22-25 years">22-25 years</option>
+                  <option value="26+ years">26+ years</option>
+                </select>
+                <ChevronDown />
               </div>
-
-
+            </div>
 
             {/* Terms */}
             <div className={`rounded-xl p-4 border-2 transition-colors ${
@@ -226,9 +234,9 @@ export default function RegistrationPage() {
             </div>
 
             {/* Submit */}
-            <button type="submit" disabled={submitting}
+            <button type="submit" disabled={loading}
               className="w-full bg-linear-to-r from-indigo-600 to-purple-600 text-white font-bold py-3.5 rounded-xl hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-4 focus:ring-indigo-300 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed shadow-lg flex items-center justify-center gap-2">
-              {submitting ? (
+              {loading ? (
                 <>
                   <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
@@ -247,7 +255,6 @@ export default function RegistrationPage() {
             </button>
           </form>
 
-          {/* Back to login */}
           <div className="mt-7 pt-6 border-t border-gray-100 text-center">
             <p className="text-gray-500 text-sm mb-3">Already have an account?</p>
             <Link to="/login"

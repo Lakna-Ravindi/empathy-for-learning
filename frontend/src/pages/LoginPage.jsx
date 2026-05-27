@@ -1,20 +1,28 @@
-import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { useAuthStore } from "../store/authStore";
+import { useState, useEffect } from "react";
+import { useNavigate, Link, useLocation } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const setAuth = useAuthStore((state) => state.setAuth);
+  const location = useLocation();
+  const { login, loading, error, setError } = useAuth();
 
   const [formData, setFormData] = useState({
-  username: "", password: "", role: "student", rememberMe: false, });
-
+    username: "", password: "", role: "student", rememberMe: false,
+  });
   const [errors, setErrors] = useState({});
-  const [submitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+
+  // Show success message if redirected from registration
+  useEffect(() => {
+    if (location.state?.message) {
+      setSuccessMessage(location.state.message);
+    }
+  }, [location.state]);
 
   const validate = () => {
-  const e = {};
+    const e = {};
     if (!formData.username.trim()) e.username = "Username is required";
     else if (formData.username.trim().length < 3)
       e.username = "Username must be at least 3 characters";
@@ -29,18 +37,14 @@ export default function LoginPage() {
     const { name, value, type, checked } = e.target;
     setFormData((p) => ({ ...p, [name]: type === "checkbox" ? checked : value }));
     if (errors[name]) setErrors((p) => { const n = { ...p }; delete n[name]; return n; });
+    if (error) setError(null); // clear API error when user types
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
-    setSubmitting(true);
-    // TODO: replace with real API — authApi.login(formData)
-    setTimeout(() => {
-      setAuth("mock-token", { username: formData.username }, formData.role);
-      setSubmitting(false);
-      navigate("/dashboard");
-    }, 1200);
+    // useAuth.login() handles everything: API call → store → navigate
+    await login(formData.username, formData.password, formData.role);
   };
 
   return (
@@ -65,6 +69,26 @@ export default function LoginPage() {
             <h2 className="text-2xl font-bold text-gray-800">Welcome Back!</h2>
             <p className="text-gray-500 mt-1 text-sm">Sign in to continue your journey</p>
           </div>
+
+          {/* ✅ Success message after registration */}
+          {successMessage && (
+            <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-xl flex items-center gap-2">
+              <svg className="w-5 h-5 text-green-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p className="text-green-700 text-sm font-medium">{successMessage}</p>
+            </div>
+          )}
+
+          {/* ❌ API error banner */}
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl flex items-center gap-2">
+              <svg className="w-5 h-5 text-red-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p className="text-red-700 text-sm font-medium">{error}</p>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
 
@@ -97,28 +121,21 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* User Name */}
+            {/* Username */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">User Name</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  {/* Person icon — matches RegistrationPage */}
                   <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                       d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
                 </div>
-                <input
-                  type="text"
-                  name="username"
-                  value={formData.username}
-                  onChange={handleChange}
+                <input type="text" name="username" value={formData.username} onChange={handleChange}
                   placeholder="Enter your username"
-                  className={`w-full pl-10 pr-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-2 
-                    focus:ring-indigo-500 transition-all text-sm ${
+                  className={`w-full pl-10 pr-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-sm ${
                     errors.username ? "border-red-400 bg-red-50" : "border-gray-200 hover:border-gray-300"
-                  }`}
-                />
+                  }`} />
               </div>
               {errors.username && <p className="text-red-500 text-xs mt-1">⚠ {errors.username}</p>}
             </div>
@@ -168,9 +185,9 @@ export default function LoginPage() {
             </div>
 
             {/* Submit */}
-            <button type="submit" disabled={submitting}
+            <button type="submit" disabled={loading}
               className="w-full bg-linear-to-r from-indigo-600 to-purple-600 text-white font-bold py-3.5 rounded-xl hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-4 focus:ring-indigo-300 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed shadow-lg flex items-center justify-center gap-2">
-              {submitting ? (
+              {loading ? (
                 <>
                   <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
@@ -189,7 +206,6 @@ export default function LoginPage() {
             </button>
           </form>
 
-          {/* Divider */}
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-gray-200" />
@@ -199,7 +215,6 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Register link */}
           <div className="text-center">
             <p className="text-gray-500 text-sm mb-3">Don't have an account?</p>
             <Link to="/register"
@@ -212,7 +227,6 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Footer */}
         <p className="text-center text-indigo-200 text-xs mt-6">
           By logging in, you agree to our{" "}
           <a href="#" className="underline hover:text-white font-medium">Terms</a> and{" "}
