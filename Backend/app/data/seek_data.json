@@ -1,0 +1,140 @@
+[
+  {
+    "skill": "Calming Body and Mind",
+
+    "description": "Helps users recognize body sensations, regulate emotions, and return to a calm resilient state.",
+
+    "emotions": [
+      "stress",
+      "anxiety",
+      "panic",
+      "overwhelmed",
+      "nervous",
+      "fear",
+      "emotional overload"
+    ],
+
+    "concepts": [
+      "body literacy",
+      "sensation words",
+      "resilient zone",
+      "dysregulation",
+      "sympathetic nervous system",
+      "parasympathetic nervous system",
+      "fight flight freeze",
+      "tracking",
+      "grounding",
+      "resourcing"
+    ],
+
+    "resilient_zone": {
+      "definition": "A balanced state where a person can experience emotions but still remain in control and make clear decisions.",
+
+      "examples": [
+        "Staying calm during exams",
+        "Handling arguments without losing control",
+        "Managing anxiety before presentations"
+      ],
+
+      "out_of_zone_signs": [
+        "overwhelmed",
+        "too anxious",
+        "numb",
+        "unable to think clearly",
+        "emotional instability",
+        "panic"
+      ]
+    },
+
+    "nervous_system": {
+      "sympathetic": "Activates fight, flight, or freeze response during stress.",
+      "parasympathetic": "Calms the body, helps relaxation and recovery."
+    },
+
+    "tools": {
+      "tracking": "Noticing internal body sensations in the present moment.",
+      "grounding": "Focusing on physical contact with objects to feel stability.",
+      "resourcing": "Bringing to mind a calming memory, place, or person."
+    },
+
+    "activities": [
+      "deep breathing",
+      "body scan",
+      "5-4-3-2-1 grounding",
+      "sensation awareness practice",
+      "resource visualization"
+    ],
+
+    "responses": [
+      "You're safe right now. Try slowing your breathing.",
+      "Focus on your feet on the ground.",
+      "Notice your body sensations gently.",
+      "Try grounding by noticing 3 things around you."
+    ],
+
+    "videos": [
+      {
+        "title": "Resilient Zone Explanation (SEEK Module)",
+        "url": "https://youtu.be/PfRT51KgNPU"
+      },
+      {
+        "title": "Nervous System & Emotional Regulation",
+        "url": "https://youtu.be/g3kEy8E-yAw"
+      }
+    ],
+
+    "quiz": [
+      {
+        "type": "mcq",
+        "question": "What is the resilient zone?",
+        "options": [
+          "A state of extreme happiness",
+          "A balanced emotional state with control",
+          "A place without emotions",
+          "A stress-free life"
+        ],
+        "answer": "A balanced emotional state with control"
+      },
+
+      {
+        "type": "mcq",
+        "question": "Which system helps calm the body after stress?",
+        "options": [
+          "Sympathetic nervous system",
+          "Parasympathetic nervous system",
+          "Digestive system",
+          "Muscular system"
+        ],
+        "answer": "Parasympathetic nervous system"
+      },
+
+      {
+        "type": "reflection",
+        "question": "Describe a time you felt out of control emotionally. What did your body feel like?"
+      },
+
+      {
+        "type": "reflection",
+        "question": "What helps you feel calm again when you are stressed?"
+      }
+    ],
+
+    "ai_guidance": {
+      "tone": "calm, supportive, non-judgmental",
+      "style": "SEEK emotional coaching approach",
+      "rules": [
+        "Always respond with empathy first",
+        "Do not diagnose mental health conditions",
+        "Use grounding techniques when stress is detected",
+        "Encourage body awareness before advice",
+        "Use simple language"
+      ]
+    },
+
+    "fallback_responses": [
+      "You're not alone. Let's slow down together.",
+      "Take a deep breath and notice your surroundings.",
+      "It's okay to feel this way. Let's ground your body."
+    ]
+  }
+]

@@ -3,6 +3,7 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from app.routes.auth_routes import router as auth_router
 from app.core.config import CORS_ORIGINS, logger, configure_logging
+from app.routes.chat_routes import router as chat_router
 import logging
 
 # Configure logging
@@ -72,6 +73,13 @@ app.include_router(
     prefix="/api/auth",
     tags=["Authentication"]
 )
+
+app.include_router(
+    chat_router,
+    prefix="/api/chat",
+    tags=["Chatbot"]
+)
+
 
 
 # ============= Root Endpoint =============
