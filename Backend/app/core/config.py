@@ -40,32 +40,26 @@ PASSWORD_REQUIRE_SYMBOLS = True
 PHONE_PREFIX = "+94"
 PHONE_PATTERN = r"^\+94\d{9}$"  # +94 followed by 9 digits
 
-# Sri Lanka districts
-VALID_DISTRICTS = [
-    "Ampara", "Anuradhapura", "Badulla", "Batticaloa", "Colombo",
-    "Galle", "Gampaha", "Jaffna", "Kalutara", "Kandy",
-    "Kegalle", "Kilinochchi", "Kurunegala", "Madurai", "Matara",
-    "Matotota", "Monaragala", "Mullaitivu", "Nuwara Eliya", "Polonnaruwa",
-    "Puttalam", "Ratnapura", "Trincomalee", "Vavuniya", "Western"
-]
+
 
 # ============= Logging Configuration =============
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
-LOG_FORMAT = "%(asctime)s - %(levelname)s - %(message)s"
+LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 
 def configure_logging():
     """Configure application logging"""
-    # Create logs directory if it doesn't exist
-    log_dir = "logs"
-    if not os.path.exists(log_dir):
-        os.makedirs(log_dir)
+    # Ensure logs directory exists
+    logs_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "logs")
+    os.makedirs(logs_dir, exist_ok=True)
+    
+    log_file = os.path.join(logs_dir, "app.log")
     
     logging.basicConfig(
         level=getattr(logging, LOG_LEVEL),
         format=LOG_FORMAT,
         handlers=[
             logging.StreamHandler(),
-            logging.FileHandler(os.path.join(log_dir, "app.log"))
+            logging.FileHandler(log_file)
         ]
     )
     return logging.getLogger(__name__)
