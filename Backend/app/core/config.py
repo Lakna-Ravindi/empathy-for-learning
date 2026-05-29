@@ -51,16 +51,21 @@ VALID_DISTRICTS = [
 
 # ============= Logging Configuration =============
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
-LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+LOG_FORMAT = "%(asctime)s - %(levelname)s - %(message)s"
 
 def configure_logging():
     """Configure application logging"""
+    # Create logs directory if it doesn't exist
+    log_dir = "logs"
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+    
     logging.basicConfig(
         level=getattr(logging, LOG_LEVEL),
         format=LOG_FORMAT,
         handlers=[
             logging.StreamHandler(),
-            logging.FileHandler("app.log")
+            logging.FileHandler(os.path.join(log_dir, "app.log"))
         ]
     )
     return logging.getLogger(__name__)
