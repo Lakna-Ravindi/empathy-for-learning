@@ -44,7 +44,7 @@ export default function LoginPage() {
     e.preventDefault();
     if (!validate()) return;
     // useAuth.login() handles everything: API call → store → navigate
-    await login(formData.username, formData.password, formData.role);
+    await login({ username: formData.username, password: formData.password, role: formData.role });
   };
 
   return (

@@ -15,9 +15,9 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegistrationPage />} />
         <Route element={<PrivateRoute />}>
+          <Route path="/assessment" element={<AssessmentPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/chat" element={<ChatPage />} />
-          <Route path="/assessment" element={<AssessmentPage />} />
           <Route path="/quiz" element={<QuizPage />} />
           <Route path="/progress" element={<ProgressReportPage />} />
         </Route>

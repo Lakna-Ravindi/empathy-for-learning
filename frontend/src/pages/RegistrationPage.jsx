@@ -17,38 +17,40 @@ export default function RegistrationPage() {
   const [showPw, setShowPw] = useState(false);
   const [showCpw, setShowCpw] = useState(false);
 
-const validate = () => {
-  const e = {};
+  const validate = () => {
+    const e = {};
 
-  if (!formData.fullName.trim())
-    e.fullName = "Username is required";
-  else if (formData.fullName.trim().length < 3)
-    e.fullName = "At least 3 characters";
-  else if (formData.fullName.trim().length > 50)
-    e.fullName = "At most 50 characters";
+    if (!formData.fullName.trim())
+      e.fullName = "Username is required";
+    else if (formData.fullName.trim().length < 3)
+      e.fullName = "At least 3 characters";
+    else if (formData.fullName.trim().length > 50)
+      e.fullName = "At most 50 characters";
 
-  if (!formData.password)
-    e.password = "Password is required";
-  else if (formData.password.length < 8)
-    e.password = "At least 8 characters";
-  else if (!/(?=.*[a-z])/.test(formData.password))
-    e.password = "Must include a lowercase letter";
-  else if (!/(?=.*[A-Z])/.test(formData.password))
-    e.password = "Must include an uppercase letter";
-  else if (!/(?=.*\d)/.test(formData.password))
-    e.password = "Must include a number";
-  else if (!/(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])/.test(formData.password))
-    e.password = "Must include a symbol (e.g. !@#$%^&*)";  // ← NEW — backend requires this
+    if (!formData.password)
+      e.password = "Password is required";
+    else if (formData.password.length < 8)
+      e.password = "At least 8 characters";
+    else if (formData.password.length > 64)   
+      e.password = "At most 64 characters";
+    else if (!/(?=.*[a-z])/.test(formData.password))
+      e.password = "Must include a lowercase letter";
+    else if (!/(?=.*[A-Z])/.test(formData.password))
+      e.password = "Must include an uppercase letter";
+    else if (!/(?=.*\d)/.test(formData.password))
+      e.password = "Must include a number";
+    else if (!/(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])/.test(formData.password))
+      e.password = "Must include a symbol (e.g. !@#$%^&*)";
 
-  if (formData.password !== formData.confirmPassword)
-    e.confirmPassword = "Passwords do not match";
+    if (formData.password !== formData.confirmPassword)
+      e.confirmPassword = "Passwords do not match";
 
-  if (!formData.agreeToTerms)
-    e.agreeToTerms = "You must agree to the terms";
+    if (!formData.agreeToTerms)
+      e.agreeToTerms = "You must agree to the terms";
 
-  setErrors(e);
-  return Object.keys(e).length === 0;
-};
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;

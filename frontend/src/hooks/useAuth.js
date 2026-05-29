@@ -4,6 +4,30 @@ import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
 import { loginUser, registerUser, getCurrentUser, logoutUser } from "../api/authApi";
 
+// ── Helper: always converts any FastAPI error shape → readable string ──
+const extractErrorMessage = (err) => {
+  const detail = err.response?.data?.detail;
+
+  if (!detail) return "Something went wrong. Please try again.";
+
+  // FastAPI 422 — array of validation error objects
+  // shape: [{ type, loc, msg, input }]
+  if (Array.isArray(detail)) {
+    const first = detail[0];
+    const field = first.loc?.[first.loc.length - 1] ?? "field";
+    const msg   = first.msg ?? "Invalid value";
+    return `${field}: ${msg}`;
+  }
+
+  // FastAPI standard error — plain string
+  if (typeof detail === "string") return detail;
+
+  // FastAPI object error — e.g. { message: "..." }
+  if (typeof detail === "object" && detail.message) return detail.message;
+
+  return "An unexpected error occurred.";
+};
+
 export function useAuth() {
   const navigate = useNavigate();
   const { setAuth, clearAuth } = useAuthStore();
@@ -29,14 +53,10 @@ export function useAuth() {
       setAuth(access_token, user, user.role || role);
 
       // 5. Role-based redirect
-      navigate(user.role === "admin" ? "/admin/dashboard" : "/dashboard");
+      navigate(user.role === "admin" ? "/admin/dashboard" : "/assessment");
 
     } catch (err) {
-      // FastAPI returns error in err.response.data.detail
-      const msg =
-        err.response?.data?.detail ||
-        "Login failed. Please check your credentials.";
-      setError(msg);
+      setError(extractErrorMessage(err));   // always a clean string
     } finally {
       setLoading(false);
     }
@@ -54,8 +74,13 @@ export function useAuth() {
       navigate("/login", {
         state: { message: "Account created! Please sign in." },
       });
-
     } catch (err) {
+      setError(extractErrorMessage(err));   // always a clean string
+    } finally {
+      setLoading(false);
+    }
+  };  
+    /*} catch (err) {
       const detail = err.response?.data?.detail;
 
       // FastAPI 422 validation errors come as an array
@@ -69,9 +94,9 @@ export function useAuth() {
     } finally {
       setLoading(false);
     }
-  }
+  }*/
 
-  // ─── Logout ─────────────────────────────────────────────────────────────────
+  // Logout 
   const logout = async () => {
     await authApi.logout();  // notify backend 
     localStorage.removeItem("refresh_token");
