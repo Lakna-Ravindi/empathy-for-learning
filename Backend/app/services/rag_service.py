@@ -2,22 +2,15 @@ from sentence_transformers import SentenceTransformer
 import faiss
 import numpy as np
 import json
-import google.generativeai as genai
+import google.genai as genai
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
-# Gemini setup
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-
-# List available models
-print("\n=== Available Models ===")
-for model in genai.list_models():
-    print(f"- {model.name}")
-print("=======================\n")
-
-model_llm = genai.GenerativeModel("gemini-2.0-flash")
+# Gemini setup - using new google.genai Client API
+genai_client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+MODEL_NAME = "gemini-2.0-flash"
 
 # Embedding model
 embed_model = SentenceTransformer("all-MiniLM-L6-v2")
@@ -59,14 +52,16 @@ index.add(np.array(embeddings).astype("float32"))
 # ========== CORE FUNCTION ==========
 def get_seek_response(user_message: str, emotion: str = "General"):
 
-    # Step 1: Retrieve context
-    query_vector = embed_model.encode([user_message])
+    # Step 1: Retrieve context with enhanced query (emotion + message)
+    # This improves retrieval quality by including emotional context
+    enhanced_query = f"Emotion: {emotion}. User message: {user_message}"
+    query_vector = embed_model.encode([enhanced_query])
 
     D, I = index.search(np.array(query_vector).astype("float32"), k=1)
 
     best_match = documents[I[0][0]]["metadata"]
 
-    # Step 2: Build prompt
+    # Step 2: Build prompt for Gemini
     prompt = f"""
 You are a SEEK emotional wellness assistant.
 
@@ -90,17 +85,35 @@ User:
 Respond in a calm supportive way using grounding techniques.
 """
 
-    # Step 3: Gemini response
+    # Step 3: Try Gemini first, fall back to local response if API fails
     try:
-        response = model_llm.generate_content(prompt)
+        response = genai_client.models.generate_content(
+            model=MODEL_NAME,
+            contents=prompt
+        )
         reply = response.text
     except Exception as e:
-        # Fallback response when quota is exceeded or API fails
+        # Log error for debugging
+        print(f"Gemini API Error: {e}")
+        
+        # Hybrid fallback: Use local template-based response with SEEK data
         error_msg = str(e).lower()
-        if "quota" in error_msg or "resource exhausted" in error_msg:
-            reply = f"I'm currently experiencing high usage limits. Here's what I can tell you about {best_match['skill']}: {best_match['description']}\n\nTry again in a few moments, or consider taking a mindful break."
-        else:
-            reply = "I'm having trouble connecting right now. Please try again in a moment."
+        
+        # Get activities for suggestions
+        activities = best_match.get('activities', [])
+        activity_suggestions = ""
+        if activities:
+            activity_suggestions = "\n".join([f"• {activity}" for activity in activities[:2]])
+        
+        # Generate intelligent local response
+        reply = f"""It sounds like you're experiencing {emotion.lower()} feelings right now.
+
+A helpful SEEK technique from "{best_match['skill']}" is to try:
+{activity_suggestions}
+
+Take a slow breath and focus on one physical sensation around you. Notice what you see, hear, or feel. Small grounding steps can help bring your mind back to the present moment.
+
+Remember: You're not alone in this experience."""
 
     return {
         "reply": reply,
