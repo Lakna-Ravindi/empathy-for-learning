@@ -1,0 +1,6 @@
+{
+  "pdf_dir": "C:\\Users\\User\\Downloads\\empathy-for-learning-Lakna\\empathy-for-learning-Lakna\\Backend\\data\\skills_pdfs",
+  "chunks": 113,
+  "embedding_dim": 384,
+  "index_dir": "C:\\Users\\User\\Downloads\\empathy-for-learning-Lakna\\empathy-for-learning-Lakna\\Backend\\data\\vector_index"
+}
