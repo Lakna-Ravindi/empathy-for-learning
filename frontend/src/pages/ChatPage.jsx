@@ -1,447 +1,184 @@
-// src/pages/ChatPage.jsx
-// src/pages/ChatPage.jsx
-import React, { useState, useRef, useEffect } from 'react';
-import { Send, Plus, PlayCircle, Award, TrendingUp, Menu, X, BookOpen } from 'lucide-react';
-import { useChatStore } from '../store/chatStore';
-import { useAuthStore } from '../store/authStore';
-import ChatMessage from '../components/chat/ChatMessage';
-import ChatInput from '../components/chat/ChatInput';
-
-const EIGHT_SKILLS = [
-  { id: 1, name: "Calming the Body and Mind", icon: "🧘", color: "emerald" },
-  { id: 2, name: "Ethical Mindfulness", icon: "🌱", color: "teal" },
-  { id: 3, name: "Emotional Awareness", icon: "❤️", color: "rose" },
-  { id: 4, name: "Self-Compassion", icon: "🤗", color: "amber" },
-  { id: 5, name: "Impartiality and Common Humanity", icon: "🌍", color: "blue" },
-  { id: 6, name: "Forgiveness and Gratitude", icon: "🙏", color: "violet" },
-  { id: 7, name: "Empathic Concern", icon: "🤝", color: "cyan" },
-  { id: 8, name: "Compassion", icon: "💖", color: "pink" },
-];
-
-const ChatPage = () => {
-  const { user } = useAuthStore();
-  const { messages, addMessage, clearChat, currentSkill, setCurrentSkill } = useChatStore();
-
-  const [input, setInput] = useState('');
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [selectedSkill, setSelectedSkill] = useState(currentSkill || EIGHT_SKILLS[0]);
-
-  const chatContainerRef = useRef(null);
-
-  useEffect(() => {
-    if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
-    }
-  }, [messages]);
-
-  const handleSend = () => {
-    if (!input.trim()) return;
-
-    addMessage({
-      id: Date.now(),
-      role: 'user',
-      content: input,
-      timestamp: new Date(),
-    });
-
-    setInput('');
-
-    // Simulate AI response (replace later with API call)
-    setTimeout(() => {
-      addMessage({
-        id: Date.now() + 1,
-        role: 'assistant',
-        content: `Thank you for your message. I'm happy to help you explore **${selectedSkill.name}** from the SEEK framework.`,
-        timestamp: new Date(),
-      });
-    }, 700);
-  };
-
-  const handleSkillSelect = (skill) => {
-    setSelectedSkill(skill);
-    setCurrentSkill(skill);
-  };
-
-  return (
-    <div className="flex h-screen bg-slate-50 overflow-hidden font-sans">
-      {/* Sidebar */}
-      <div className={`${isSidebarOpen ? 'w-72' : 'w-0'} transition-all duration-300 border-r bg-white flex flex-col overflow-hidden`}>
-        <div className="p-4 border-b flex items-center gap-3">
-          <div className="w-10 h-10 bg-linear-to-br from-teal-500 to-emerald-600 rounded-2xl flex items-center justify-center text-white text-2xl font-bold">
-            S
-          </div>
-          <div>
-            <h1 className="font-bold text-2xl text-slate-800">SEEK</h1>
-            <p className="text-xs text-slate-500 -mt-1">Empathy Learning</p>
-          </div>
-        </div>
-
-        <div className="p-4">
-          <button
-            onClick={clearChat}
-            className="w-full flex items-center justify-center gap-2 bg-teal-600 hover:bg-teal-700 text-white py-3 px-4 rounded-2xl font-medium transition-all"
-          >
-            <Plus size={20} /> New Chat
-          </button>
-        </div>
-
-        <div className="px-4">
-          <div className="uppercase text-xs font-semibold text-slate-500 mb-3 px-3">Empathy Skills</div>
-          <div className="space-y-1 overflow-y-auto max-h-[calc(100vh-280px)] pr-2">
-            {EIGHT_SKILLS.map((skill) => (
-              <button
-                key={skill.id}
-                onClick={() => handleSkillSelect(skill)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-left hover:bg-slate-100 transition-all ${
-                  selectedSkill.id === skill.id ? 'bg-teal-50 border border-teal-200' : ''
-                }`}
-              >
-                <span className="text-2xl">{skill.icon}</span>
-                <span className="text-sm font-medium text-slate-700">{skill.name}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col">
-        {/* Header */}
-        <div className="h-16 border-b bg-white px-6 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="lg:hidden">
-              <Menu size={24} />
-            </button>
-            <div className="flex items-center gap-3">
-              <span className="text-3xl">{selectedSkill.icon}</span>
-              <div>
-                <h2 className="font-semibold text-lg">{selectedSkill.name}</h2>
-                <p className="text-xs text-teal-600">SEEK Framework</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Messages */}
-        <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50">
-          {messages.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center text-center">
-              <div className="text-8xl mb-6 opacity-70">{selectedSkill.icon}</div>
-              <h3 className="text-3xl font-semibold text-slate-700 mb-3">Hello, {user?.name || "Student"}</h3>
-              <p className="text-slate-600 max-w-md">
-                How can I help you develop your <span className="font-medium text-teal-600">{selectedSkill.name}</span> today?
-              </p>
-            </div>
-          ) : (
-            messages.map((msg) => <ChatMessage key={msg.id} message={msg} />)
-          )}
-        </div>
-
-        {/* Input */}
-        <div className="p-6 border-t bg-white">
-          <ChatInput input={input} setInput={setInput} onSend={handleSend} />
-        </div>
-      </div>
-    </div>
-  );
+import { useState, useCallback } from "react";
+import ChatWindow from "../components/chat/ChatWindow";
+import ChatInput from "../components/chat/ChatInput";
+import useAuthStore from "../store/authStore";
+import useChatStore from "../store/chatStore";
+import { sendMessage } from "../api/chatApi";
+import { Brain, TrendingUp, ShieldCheck, Smile } from "lucide-react";
+ 
+// Emotion level badge colors
+const emotionLevelStyle = {
+  Low: "text-green-600 bg-green-50",
+  Moderate: "text-yellow-600 bg-yellow-50",
+  High: "text-red-600 bg-red-50",
 };
-
-export default ChatPage;
-
-/*import React, { useState, useRef, useEffect } from 'react';
-import { Send, Plus, BookOpen, PlayCircle, Award, TrendingUp, Menu, X } from 'lucide-react';
-import { useChatStore } from '../store/chatStore';
-import { useAuthStore } from '../store/authStore';
-import ChatMessage from '../components/chat/ChatMessage';
-import ChatInput from '../components/chat/ChatInput';
-import Sidebar from '../components/common/Sidebar';
-
-const EIGHT_SKILLS = [
-  { id: 1, name: "Calming the Body and Mind", icon: "🧘", color: "emerald" },
-  { id: 2, name: "Ethical Mindfulness", icon: "🌱", color: "teal" },
-  { id: 3, name: "Emotional Awareness", icon: "❤️", color: "rose" },
-  { id: 4, name: "Self-Compassion", icon: "🤗", color: "amber" },
-  { id: 5, name: "Impartiality and Common Humanity", icon: "🌍", color: "blue" },
-  { id: 6, name: "Forgiveness and Gratitude", icon: "🙏", color: "violet" },
-  { id: 7, name: "Empathic Concern", icon: "🤝", color: "cyan" },
-  { id: 8, name: "Compassion", icon: "💖", color: "pink" },
-];
-
-const ChatPage = () => {
-  const { user } = useAuthStore();
-  const { messages, addMessage, clearChat, currentSkill, setCurrentSkill } = useChatStore();
-  
-  const [input, setInput] = useState('');
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [activeTab, setActiveTab] = useState('chat'); // 'chat' | 'activities' | 'quizzes'
-  const [selectedSkill, setSelectedSkill] = useState(currentSkill || EIGHT_SKILLS[0]);
-  
-  const chatContainerRef = useRef(null);
-
-  // Auto-scroll to bottom
-  useEffect(() => {
-    if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
-    }
-  }, [messages]);
-
-  const handleSend = async () => {
-    if (!input.trim()) return;
-
-    const userMessage = {
-      id: Date.now(),
-      role: 'user',
-      content: input,
-      timestamp: new Date(),
-    };
-
-    addMessage(userMessage);
-    setInput('');
-
-    // Simulate AI thinking (replace with actual API call later)
-    setTimeout(() => {
-      const botResponse = {
-        id: Date.now() + 1,
-        role: 'assistant',
-        content: `Thank you for sharing that. Let's explore this through the lens of **${selectedSkill.name}**. 
-
-This is connected to the SEEK framework. Would you like me to:
-1. Explain the key concepts with examples
-2. Share a short reflective activity
-3. Show a related video clip
-4. Guide you through a guided practice?`,
-        timestamp: new Date(),
-        suggestions: ["Explain key concepts", "Start activity", "Watch video", "Practice exercise"],
-      };
-      addMessage(botResponse);
-    }, 800);
+ 
+const riskLevelStyle = {
+  LOW: "text-green-600",
+  MEDIUM: "text-yellow-600",
+  HIGH: "text-red-600",
+};
+ 
+export default function ChatPage() {
+  const user = useAuthStore((state) => state.user);
+  const { messages, addMessage, isLoading, setLoading } = useChatStore();
+ 
+  // Fallback demo stats (replace with real data from API)
+  const stats = {
+    emotionalLevel: user?.emotionalLevel || "Moderate",
+    skillsProgress: user?.skillsProgress || "2/8",
+    riskLevel: user?.riskLevel || "LOW",
+    currentEmotion: user?.currentEmotion || "Calm",
   };
-
-  const handleSkillSelect = (skill) => {
-    setSelectedSkill(skill);
-    setCurrentSkill(skill);
-    // In real app, you would load skill-specific context or start new chat thread
-    if (messages.length > 3) {
-      if (confirm("Switching skill will start a fresh conversation. Continue?")) {
-        clearChat();
+ 
+  const handleSend = useCallback(
+    async (text) => {
+      const now = new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+ 
+      // Add user message
+      addMessage({
+        id: Date.now(),
+        role: "user",
+        content: text,
+        timestamp: now,
+        emotion: "moderate",
+      });
+ 
+      setLoading(true);
+ 
+      try {
+        const response = await sendMessage(text, messages);
+        addMessage({
+          id: Date.now() + 1,
+          role: "assistant",
+          content: response.message || response,
+          timestamp: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          emotion: response.emotion || "calm",
+        });
+      } catch (err) {
+        addMessage({
+          id: Date.now() + 1,
+          role: "assistant",
+          content:
+            "I'm here to listen. It seems there was a connection issue — please try again.",
+          timestamp: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          emotion: "calm",
+        });
+      } finally {
+        setLoading(false);
       }
-    }
-  };
-
-  const startActivity = (type) => {
-    // This would open modal or navigate to activity
-    alert(`Starting ${type} for ${selectedSkill.name}. This would open video/activity in real implementation.`);
-  };
-
+    },
+    [messages, addMessage, setLoading]
+  );
+ 
   return (
-    <div className="flex h-screen bg-slate-50 overflow-hidden">
-     // {/* Sidebar 
-      <div className={`${isSidebarOpen ? 'w-72' : 'w-0'} transition-all duration-300 border-r border-slate-200 bg-white flex flex-col overflow-hidden`}>
-        <div className="p-4 border-b flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-linear-to-br from-teal-500 to-emerald-600 rounded-2xl flex items-center justify-center text-white font-bold text-xl">
-              S
-            </div>
-            <div>
-              <h1 className="font-semibold text-xl text-slate-800">SEEK Chat</h1>
-              <p className="text-xs text-slate-500">Empathy for A/L & Uni Students</p>
-            </div>
-          </div>
-          <button 
-            onClick={() => setIsSidebarOpen(false)}
-            className="lg:hidden text-slate-500 hover:text-slate-700"
-          >
-            <X size={20} />
-          </button>
-        </div>
-
-        {/* New Chat 
-        <div className="p-4">
-          <button 
-            onClick={() => { clearChat(); }}
-            className="w-full flex items-center gap-3 px-4 py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-2xl font-medium transition-all active:scale-[0.985]"
-          >
-            <Plus size={20} />
-            New Conversation
-          </button>
-        </div>
-
-        {/* Skills Navigation 
-        <div className="px-4 mb-2">
-          <div className="uppercase text-xs font-semibold tracking-widest text-slate-500 px-4 mb-2">8 Empathy Skills</div>
-          <div className="space-y-1 max-h-[calc(100vh-320px)] overflow-y-auto pr-2 custom-scrollbar">
-            {EIGHT_SKILLS.map((skill) => (
-              <button
-                key={skill.id}
-                onClick={() => handleSkillSelect(skill)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-left transition-all hover:bg-slate-100 group ${selectedSkill.id === skill.id ? 'bg-teal-50 border border-teal-200' : ''}`}
-              >
-                <span className="text-2xl">{skill.icon}</span>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm text-slate-700 line-clamp-2">{skill.name}</p>
-                </div>
-                {selectedSkill.id === skill.id && (
-                  <div className="w-2 h-2 bg-teal-500 rounded-full"></div>
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Quick Access 
-        <div className="mt-auto border-t p-4 space-y-2">
-          <button 
-            onClick={() => setActiveTab('activities')}
-            className="w-full flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-100 rounded-2xl transition-colors"
-          >
-            <PlayCircle size={20} />
-            <span className="font-medium">Activities & Videos</span>
-          </button>
-          
-          <button 
-            onClick={() => window.location.href = '/quiz'}
-            className="w-full flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-100 rounded-2xl transition-colors"
-          >
-            <Award size={20} />
-            <span className="font-medium">Take Quiz</span>
-          </button>
-
-          <button 
-            onClick={() => window.location.href = '/progress'}
-            className="w-full flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-100 rounded-2xl transition-colors"
-          >
-            <TrendingUp size={20} />
-            <span className="font-medium">My Progress</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Main Chat Area 
-      <div className="flex-1 flex flex-col h-full">
-        {/* Top Header 
-        <div className="h-14 border-b bg-white px-6 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <button 
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="lg:hidden text-slate-600"
-            >
-              <Menu size={24} />
-            </button>
-            
-            <div className="flex items-center gap-3">
-              <span className="text-3xl">{selectedSkill.icon}</span>
-              <div>
-                <h2 className="font-semibold text-slate-800">{selectedSkill.name}</h2>
-                <p className="text-xs text-emerald-600">SEEK • Level {Math.floor(Math.random()*3) + 1}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4 text-sm">
-            <div className="hidden sm:flex items-center bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-medium">
-              ❤️ Empathy Score: 78%
-            </div>
-            <button className="text-slate-500 hover:text-slate-700 transition-colors">
-              <BookOpen size={20} />
-            </button>
-          </div>
-        </div>
-
-        {/* Messages Area 
-        <div 
-          ref={chatContainerRef}
-          className="flex-1 overflow-y-auto p-6 space-y-8 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] bg-size-[40px_40px]"
-        >
-          {messages.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center text-center max-w-md mx-auto">
-              <div className="text-7xl mb-6 opacity-75">{selectedSkill.icon}</div>
-              <h3 className="text-2xl font-semibold text-slate-700 mb-2">Welcome to {selectedSkill.name}</h3>
-              <p className="text-slate-600 leading-relaxed">
-                I'm here to help you develop deeper emotional intelligence. 
-                Ask me anything about this skill or share how you're feeling today.
-              </p>
-              
-              <div className="mt-10 grid grid-cols-2 gap-3 w-full max-w-sm">
-                {["What is self-compassion?", "How do I practice mindfulness?", "Give me an activity"].map((q, i) => (
-                  <button 
-                    key={i}
-                    onClick={() => setInput(q)}
-                    className="text-left p-4 bg-white border border-slate-200 hover:border-teal-300 rounded-3xl text-sm transition-all hover:shadow"
-                  >
-                    {q}
-                  </button>
-                ))}
-              </div>
-            </div>
-          ) : (
-            messages.map((msg) => (
-              <ChatMessage key={msg.id} message={msg} />
-            ))
-          )}
-        </div>
-
-        {/* Input Area 
-        <div className="border-t bg-white p-6">
-          <ChatInput 
-            input={input}
-            setInput={setInput}
-            onSend={handleSend}
-            disabled={!input.trim()}
-          />
-          
-          <div className="flex justify-center gap-6 mt-4 text-xs text-slate-500">
-            <button 
-              onClick={() => startActivity('video')}
-              className="flex items-center gap-1.5 hover:text-teal-600 transition-colors"
-            >
-              <PlayCircle size={16} /> Video Lesson
-            </button>
-            <button 
-              onClick={() => startActivity('activity')}
-              className="flex items-center gap-1.5 hover:text-teal-600 transition-colors"
-            >
-              <BookOpen size={16} /> Guided Activity
-            </button>
-            <button 
-              onClick={() => startActivity('quiz')}
-              className="flex items-center gap-1.5 hover:text-teal-600 transition-colors"
-            >
-              <Award size={16} /> Quick Check-in
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Right Panel - Context Helper (Optional but useful) 
-      <div className="hidden xl:block w-80 border-l bg-white p-6 overflow-y-auto">
-        <div className="sticky top-6">
-          <h3 className="font-semibold mb-4 flex items-center gap-2 text-slate-700">
-            <span>📖</span> Today's Focus
-          </h3>
-          
-          <div className="bg-teal-50 border border-teal-100 rounded-3xl p-5 mb-6">
-            <p className="text-sm leading-relaxed text-slate-600">
-              {selectedSkill.name} helps us respond to ourselves and others with kindness and understanding. 
-              Today we are focusing on practical exercises.
+    <div className="flex flex-col h-screen bg-gray-50 overflow-hidden">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-100 px-6 py-4 flex-shrink-0">
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          {/* Welcome */}
+          <div>
+            <p className="text-xs text-gray-600 mb-0.5">Welcome,</p>
+            <p className="font-bold text-gray-800 text-lg leading-tight">
+              {user?.username}
             </p>
           </div>
-
-          <div className="space-y-6">
-            <div>
-              <h4 className="text-sm font-semibold text-slate-500 mb-3">RECOMMENDED NEXT</h4>
-              <div className="space-y-3">
-                {["Guided Breathing Exercise", "Gratitude Journal Prompt", "Empathy Mapping Activity"].map((item, i) => (
-                  <div key={i} className="bg-white border rounded-2xl p-4 text-sm cursor-pointer hover:border-teal-300 transition-colors" onClick={() => startActivity(item)}>
-                    {item}
-                  </div>
-                ))}
-              </div>
-            </div>
+ 
+          {/* Stats cards */}
+          <div className="flex gap-3 flex-wrap">
+            <StatCard
+              icon={<Brain size={14} className="text-yellow-500" />}
+              label="Emotional Level"
+              value={stats.emotionalLevel}
+              valueClass={
+                emotionLevelStyle[stats.emotionalLevel] ||
+                "text-yellow-600 bg-yellow-50"
+              }
+            />
+            <StatCard
+              icon={<TrendingUp size={14} className="text-blue-500" />}
+              label="Skills Progress"
+              value={stats.skillsProgress}
+              valueClass="text-blue-600 bg-blue-50"
+            />
+            <StatCard
+              icon={<ShieldCheck size={14} className="text-green-500" />}
+              label="Risk Level"
+              value={stats.riskLevel}
+              valueClass={
+                riskLevelStyle[stats.riskLevel] || "text-green-600"
+              }
+              plain
+            />
+            <StatCard
+              icon={<Smile size={14} className="text-indigo-500" />}
+              label="Current Emotion"
+              value={stats.currentEmotion}
+              valueClass="text-indigo-600 bg-indigo-50"
+            />
           </div>
+        </div>
+      </div>
+ 
+      {/* Chat area */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Chat header */}
+        <div className="px-6 pt-5 pb-2 flex-shrink-0">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-xl">💬</span>
+            <h1 className="text-xl font-bold text-gray-800">
+              SEEK Empathy Guide Chatbot
+            </h1>
+          </div>
+          <p className="text-sm text-gray-500">
+            Emotion-aware support guided by SEEK principles:{" "}
+            <span className="font-medium text-indigo-600">
+              Self-awareness, Empathy, Ethics, and Kindness.
+            </span>
+          </p>
+        </div>
+ 
+        {/* Message container with card */}
+        <div className="flex-1 mx-5 mb-0 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
+          <ChatWindow messages={messages} isLoading={isLoading} />
+        </div>
+ 
+        {/* Input */}
+        <div className="flex-shrink-0">
+          <ChatInput onSend={handleSend} isLoading={isLoading} />
         </div>
       </div>
     </div>
   );
-};
-
-export default ChatPage;*/
+}
+ 
+function StatCard({ icon, label, value, valueClass, plain }) {
+  return (
+    <div className="border border-gray-100 rounded-xl px-4 py-2.5 bg-white shadow-sm min-w-[110px]">
+      <div className="flex items-center gap-1 mb-1">
+        {icon}
+        <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wide">
+          {label}
+        </p>
+      </div>
+      <p
+        className={`text-base font-bold ${
+          plain
+            ? valueClass
+            : `px-2 py-0.5 rounded-lg inline-block text-sm ${valueClass}`
+        }`}
+      >
+        {value}
+      </p>
+    </div>
+  );
+}

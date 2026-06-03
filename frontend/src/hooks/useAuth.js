@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
 import { loginUser, registerUser, getCurrentUser, logoutUser } from "../api/authApi";
 
-// ── Helper: always converts any FastAPI error shape → readable string ──
+//  Helper: always converts any FastAPI error shape → readable string
 const extractErrorMessage = (err) => {
   const detail = err.response?.data?.detail;
 
@@ -46,9 +46,12 @@ export function useAuth() {
       localStorage.setItem("token", access_token);
       localStorage.setItem("refresh_token", refresh_token); // store for later refresh
 
-      // 3. GET /api/auth/me → { username, role }
-      const user = await getCurrentUser();
-
+      // 3. Decode username directly from JWT token
+      const tokenPayload = JSON.parse(atob(access_token.split(".")[1]));
+      const user = {
+        username: tokenPayload.username,
+        role: tokenPayload.role,
+      };
       // 4. Save to Zustand + localStorage
       setAuth(access_token, user, user.role || role);
 
@@ -56,7 +59,7 @@ export function useAuth() {
       navigate(user.role === "admin" ? "/admin/dashboard" : "/assessment");
 
     } catch (err) {
-      setError(extractErrorMessage(err));   // always a clean string
+      setError(extractErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -80,21 +83,6 @@ export function useAuth() {
       setLoading(false);
     }
   };  
-    /*} catch (err) {
-      const detail = err.response?.data?.detail;
-
-      // FastAPI 422 validation errors come as an array
-      if (Array.isArray(detail)) {
-        const first = detail[0];
-        const field = first.loc?.[first.loc.length - 1] ?? "field";
-        setError(`${field}: ${first.msg}`);
-      } else {
-        setError(detail || "Registration failed. Please try again.");
-      }
-    } finally {
-      setLoading(false);
-    }
-  }*/
 
   // Logout 
   const logout = async () => {

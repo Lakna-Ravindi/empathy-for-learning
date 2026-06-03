@@ -32,6 +32,7 @@ export const useAuthStore = create(
     }
   )
 );
+export default useAuthStore;
 /*import { create } from 'zustand';
 
 export const useAuthStore = create((set) => ({
