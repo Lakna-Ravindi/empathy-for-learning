@@ -61,8 +61,9 @@ class RAGService:
         for distance, doc in zip(distances, docs):
             chunk_skill = str(doc.get("skill", "")).lower()
             score = float(distance)
-            if skill and skill.lower() in chunk_skill:
-                score -= 0.15  # Improve rank for skill-aligned chunks.
+            if skill and skill.lower() not in chunk_skill:
+                continue  # HARD FILTER OUT
+
             ranked.append((score, doc))
 
         ranked.sort(key=lambda x: x[0])

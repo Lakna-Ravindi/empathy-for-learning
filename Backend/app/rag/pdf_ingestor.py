@@ -61,6 +61,14 @@ def _chunk_text(text: str, chunk_size: int, overlap: int) -> List[str]:
 
 def _infer_skill_from_filename(pdf_path: Path, known_skills: List[str]) -> Optional[str]:
     name = pdf_path.stem.lower()
+    
+    # Check for "Skill X" pattern first since files are named "Skill 1 handout.pdf", etc.
+    match = re.search(r"skill\s*(\d+)", name, re.IGNORECASE)
+    if match:
+        skill_idx = int(match.group(1)) - 1
+        if 0 <= skill_idx < len(known_skills):
+            return known_skills[skill_idx]
+
     for skill in known_skills:
         if skill.lower() in name:
             return skill

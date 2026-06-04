@@ -122,17 +122,42 @@ async def chat(request: ChatRequest, current_user = Depends(get_current_user)):
             skill=skill_name,
             top_k=5
         )
+
+        logger.debug("RAG context (top chunk): %s", context[0] if context else None)
         
-        # 5. Build prompt with all context
+        # 5. Build prompt with safety, emotion, skill, and top RAG chunk
         prompt = gemini_service.build_prompt(
             message=message,
             emotion=emotion_result,
             skill=skill_obj,
-            context=context
+            context=context,
+            safety=safety_check,
         )
         
-        # 6. Generate response
-        response_text = gemini_service.generate(prompt)
+        fallback_bundle = gemini_service.build_fallback_response(
+            emotion=emotion_result,
+            skill=skill_obj,
+            risk_level=risk_level,
+            message=message,
+        )
+
+        # 6. Generate a single structured response from Gemini, with a local fallback
+        structured = gemini_service.generate_structured(
+            prompt,
+            output_format="json",
+            fallback_bundle=fallback_bundle,
+        )
+        logger.debug("Gemini structured output: %s", structured)
+
+        if isinstance(structured, dict):
+            emotion = structured.get("emotion", emotion)
+            confidence = structured.get("confidence", confidence)
+            skill_name = structured.get("skill", skill_name)
+            response_text = structured.get("response", fallback_bundle["response"])
+        else:
+            response_text = fallback_bundle["response"]
+
+        logger.debug("Generated response: %s", response_text)
         
         # 7. Save to database
         if db is not None:

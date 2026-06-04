@@ -18,6 +18,7 @@ REVOKED_TOKENS_COLLECTION = "revoked_tokens"
 
 # ============= Gemini API Configuration =============
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY", "")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 
 # ============= CORS Configuration =============
 CORS_ORIGINS = [

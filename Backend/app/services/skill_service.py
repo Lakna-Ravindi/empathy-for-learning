@@ -74,63 +74,75 @@ class SkillService:
         """
         return [
             {
-                "skill_id": "breathing",
-                "skill": "Breathing Exercises",
-                "emotions": ["anxiety", "stress", "fear"],
+                "skill": "Calming the Body and Mind",
+                "description": "Helps users recognize body sensations, regulate emotions, and return to a calm resilient state using body literacy and regulation tools.",
+                "emotions": ["stress", "anxiety", "panic", "overwhelmed", "nervous", "fear", "emotional overload", "irritated", "numb"],
                 "ai_guidance": {
-                    "tone": "calm and supportive",
-                    "focus": "grounding and relaxation"
-                },
-                "description": "Guided breathing exercises to reduce anxiety"
+                    "tone": "calm, supportive, non-judgmental",
+                    "style": "SEEK emotional coaching approach"
+                }
             },
             {
-                "skill_id": "grounding",
-                "skill": "Grounding Techniques",
-                "emotions": ["anxiety", "panic", "fear"],
+                "skill": "Ethical Mindfulness",
+                "description": "Develops the ability to act according to core values even under stress through heedfulness, mindfulness, awareness, and attention stability.",
+                "emotions": ["anger", "regret", "embarrassment", "impulse", "aggression"],
                 "ai_guidance": {
-                    "tone": "reassuring and present",
-                    "focus": "sensory awareness and presence"
-                },
-                "description": "5-4-3-2-1 sensory technique and other grounding methods"
+                    "tone": "balanced, value-centered",
+                    "style": "SEEK ethical coaching"
+                }
             },
             {
-                "skill_id": "cognitive_reframe",
-                "skill": "Cognitive Reframing",
-                "emotions": ["anxiety", "stress", "hopelessness", "frustration"],
+                "skill": "Emotional Awareness",
+                "description": "Builds ability to observe emotions and mental states clearly, create space between trigger and response, and prevent emotional escalation.",
+                "emotions": ["anger", "gratitude", "jealousy", "resentment", "anxiety"],
                 "ai_guidance": {
-                    "tone": "curious and encouraging",
-                    "focus": "perspective shifting"
-                },
-                "description": "Challenge and reframe unhelpful thinking patterns"
+                    "tone": "observant and gentle",
+                    "style": "SEEK awareness coaching"
+                }
             },
             {
-                "skill_id": "social_connection",
-                "skill": "Social Connection",
-                "emotions": ["loneliness", "isolation", "sadness"],
+                "skill": "Self Compassion",
+                "description": "Helps overcome thinking traps, perfectionism, and self-criticism to build healthier self-relationship and emotional well-being.",
+                "emotions": ["self-criticism", "perfectionism", "inferiority", "superiority", "unrealistic pressure"],
                 "ai_guidance": {
-                    "tone": "warm and inclusive",
-                    "focus": "connection and belonging"
-                },
-                "description": "Tips for reaching out and building meaningful connections"
+                    "tone": "warm, kind, understanding",
+                    "style": "SEEK self-compassion coaching"
+                }
             },
             {
-                "skill_id": "self_compassion",
-                "skill": "Self-Compassion",
-                "emotions": ["sadness", "hopelessness", "frustration", "anger"],
+                "skill": "Impartiality and Common Humanity",
+                "description": "Reduces bias, stereotypes, and prejudice by recognizing shared human experiences and practicing impartial compassion.",
+                "emotions": ["bias", "prejudice", "in-group favoritism"],
                 "ai_guidance": {
-                    "tone": "gentle and supportive",
-                    "focus": "self-kindness and acceptance"
-                },
-                "description": "Developing compassion towards yourself during difficult times"
+                    "tone": "inclusive and fair",
+                    "style": "SEEK impartiality coaching"
+                }
             },
             {
-                "skill_id": "mindfulness",
-                "skill": "Mindfulness",
-                "emotions": ["stress", "anxiety", "sadness"],
+                "skill": "Forgiveness and Gratitude",
+                "description": "Cultivates forgiveness by letting go of resentment and builds gratitude to improve emotional well-being and relationships.",
+                "emotions": ["resentment", "anger", "gratitude", "bitterness"],
                 "ai_guidance": {
-                    "tone": "peaceful and present",
-                    "focus": "awareness and acceptance"
-                },
-                "description": "Mindfulness meditation and present moment awareness"
+                    "tone": "gentle and healing",
+                    "style": "SEEK forgiveness & gratitude coaching"
+                }
+            },
+            {
+                "skill": "Empathic Concern",
+                "description": "Develops healthy empathy by distinguishing affective/cognitive empathy, avoiding empathic distress, and cultivating sympathetic joy.",
+                "emotions": ["empathic distress", "envy", "emotional contagion", "burnout"],
+                "ai_guidance": {
+                    "tone": "caring yet balanced",
+                    "style": "SEEK empathic concern coaching"
+                }
+            },
+            {
+                "skill": "Compassion",
+                "description": "Cultivates genuine compassion as a strength, with clear boundaries, agency, and action across wishing, aspiring, and engaged levels.",
+                "emotions": ["apathy", "powerlessness", "compassion fatigue"],
+                "ai_guidance": {
+                    "tone": "wise and courageous",
+                    "style": "SEEK compassion coaching"
+                }
             }
         ]

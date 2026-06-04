@@ -26,7 +26,7 @@ class Embedder:
         try:
             from sentence_transformers import SentenceTransformer
             self.model = SentenceTransformer(self.model_name)
-            self.embedding_dim = self.model.get_sentence_embedding_dimension()
+            self.embedding_dim = self.model.get_embedding_dimension()
         except ImportError:
             print("sentence-transformers not installed. Using fallback embedder.")
             self.model = None

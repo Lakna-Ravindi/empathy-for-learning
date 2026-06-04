@@ -32,7 +32,11 @@
       "style": "SEEK emotional coaching approach",
       "rules": ["Always respond with empathy first", "Do not diagnose mental health conditions", "Use grounding techniques when stress is detected", "Encourage body awareness before advice", "Use simple language"]
     },
-    "fallback_responses": ["You're not alone. Let's slow down together.", "Take a deep breath and notice your surroundings.", "It's okay to feel this way. Let's ground your body."]
+    "fallback_responses": [
+      "You're not alone. Let's slow down together.",
+      "Take a deep breath and notice your surroundings.",
+      "It's okay to feel this way. Let's ground your body."
+    ]
   },
   {
     "skill": "Ethical Mindfulness",
@@ -50,7 +54,13 @@
       "tone": "balanced, value-centered",
       "style": "SEEK ethical coaching",
       "rules": ["Help user align actions with values", "Encourage pause before reaction"]
-    }
+    },
+    "fallback_responses": [
+      "When in doubt, pause — your values are always there to guide you.",
+      "It's okay if you didn't act perfectly. What matters is what you choose next.",
+      "Let's gently reflect: what would your best self do in this moment?",
+      "Even small moments of awareness are a step toward acting with integrity."
+    ]
   },
   {
     "skill": "Emotional Awareness",
@@ -65,7 +75,13 @@
     "ai_guidance": {
       "tone": "observant and gentle",
       "style": "SEEK awareness coaching"
-    }
+    },
+    "fallback_responses": [
+      "It's okay if you can't name the feeling right now — just noticing that something is there is a good start.",
+      "Emotions can feel complex. Let's slow down and explore what's coming up for you.",
+      "You don't have to have it all figured out. Simply observing your inner state is powerful.",
+      "Whatever you're feeling is valid. Let's gently look at it together."
+    ]
   },
   {
     "skill": "Self Compassion",
@@ -79,7 +95,13 @@
     "ai_guidance": {
       "tone": "warm, kind, understanding",
       "style": "SEEK self-compassion coaching"
-    }
+    },
+    "fallback_responses": [
+      "You deserve the same kindness you would offer a good friend.",
+      "Struggling doesn't mean you're failing — it means you're human.",
+      "Try speaking to yourself the way you'd comfort someone you love.",
+      "It's okay to not be perfect. Growth and self-kindness can coexist."
+    ]
   },
   {
     "skill": "Impartiality and Common Humanity",
@@ -93,7 +115,13 @@
     "ai_guidance": {
       "tone": "inclusive and fair",
       "style": "SEEK impartiality coaching"
-    }
+    },
+    "fallback_responses": [
+      "We all carry biases — noticing them is the first step toward fairness.",
+      "Beneath our differences, we share the same wish to be happy and free from suffering.",
+      "Try seeing this person or group through the lens of our shared humanity.",
+      "It's a lifelong practice. Every moment of openness counts."
+    ]
   },
   {
     "skill": "Forgiveness and Gratitude",
@@ -107,7 +135,13 @@
     "ai_guidance": {
       "tone": "gentle and healing",
       "style": "SEEK forgiveness & gratitude coaching"
-    }
+    },
+    "fallback_responses": [
+      "Forgiveness is a gift you give yourself — it doesn't mean what happened was okay.",
+      "Even one small thing to be grateful for can shift how we feel right now.",
+      "Letting go of resentment is a process. Be patient with yourself.",
+      "Gratitude doesn't erase pain — it helps us see the full picture of our lives."
+    ]
   },
   {
     "skill": "Empathic Concern",
@@ -122,7 +156,13 @@
     "ai_guidance": {
       "tone": "caring yet balanced",
       "style": "SEEK empathic concern coaching"
-    }
+    },
+    "fallback_responses": [
+      "Caring deeply for others is a strength — just remember to care for yourself too.",
+      "If you're feeling overwhelmed by others' pain, it's okay to step back and ground yourself.",
+      "You can hold space for someone's suffering without losing yourself in it.",
+      "Empathy is a skill that grows with practice and self-awareness."
+    ]
   },
   {
     "skill": "Compassion",
@@ -137,6 +177,12 @@
     "ai_guidance": {
       "tone": "wise and courageous",
       "style": "SEEK compassion coaching"
-    }
+    },
+    "fallback_responses": [
+      "Compassion begins with simply noticing that suffering exists — yours or another's.",
+      "You don't have to fix everything. Even a small act of care makes a difference.",
+      "If compassion feels heavy right now, start with wishing others well from a distance.",
+      "Boundaries and compassion can coexist — caring wisely is still caring deeply."
+    ]
   }
 ]
