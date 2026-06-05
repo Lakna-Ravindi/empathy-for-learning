@@ -146,6 +146,11 @@ async def chat(request: ChatRequest, current_user = Depends(get_current_user)):
             prompt,
             output_format="json",
             fallback_bundle=fallback_bundle,
+            user_message=message,
+            safety=gemini_service._format_safety_assessment(safety_check),
+            emotion=gemini_service._format_detected_emotion(emotion_result),
+            skill=gemini_service._format_identified_skill(skill_obj),
+            chunk=gemini_service._format_retrieved_chunk(context),
         )
         logger.debug("Gemini structured output: %s", structured)
 

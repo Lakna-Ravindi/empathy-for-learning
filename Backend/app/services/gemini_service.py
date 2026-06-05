@@ -7,6 +7,7 @@ import json
 import logging
 import random
 import time
+import uuid
 from google import genai
 from typing import Dict, Any, List, Optional
 from app.core.config import GOOGLE_API_KEY, GEMINI_MODEL
@@ -38,6 +39,8 @@ You will receive:
 4. Identified Skill
 5. Relevant Knowledge Chunk Retrieved from the Skill-Specific PDF
 
+---
+
 ### Processing Rules
 
 #### Step 1: Safety Validation
@@ -64,28 +67,37 @@ Apply the skill's tone and focus in how you guide the user. Offer practical step
 
 Carefully use the retrieved PDF chunk as the knowledge source.
 
-* Extract the most relevant concepts from the chunk.
-* Adapt them naturally to the user's situation.
-* Do not copy the chunk verbatim.
-* Explain concepts in a simple, supportive, and practical way.
-* If no chunk was retrieved, still respond supportively using the identified skill.
+- Extract the most relevant concepts from the chunk.
+- Adapt them naturally to the user's situation.
+- Do not copy the chunk verbatim.
+- Explain concepts in a simple, supportive, and practical way.
+- If no chunk was retrieved, still respond supportively using the identified skill.
 
-### Response Requirements
+---
 
-Generate a response that:
+### RESPONSE STYLE RULES (IMPORTANT)
 
-1. Shows empathy and emotional understanding.
-2. Reflects the detected emotion.
-3. Uses the identified skill as guidance.
-4. Incorporates the retrieved PDF knowledge naturally.
-5. Provides actionable and practical suggestions.
-6. Uses a warm, supportive, and encouraging tone.
-7. Avoids judgmental, clinical, or robotic language.
-8. Avoids mentioning the internal workflow, safety system, emotion detection, skill detection, or PDF retrieval process.
-9. Keeps the response conversational and personalized to the user's message.
-10. Ends with a gentle follow-up question or invitation for the user to continue sharing if appropriate.
+- Respond like a warm, caring human (not like a system or AI).
+- Avoid repetitive phrases like "I'm here for you".
+- Be natural, simple, and emotionally intelligent.
+- Be specific to the user's situation.
+- Give 1–2 practical suggestions only.
+- Do NOT mention internal systems, emotion detection, skills, or PDF retrieval.
 
-### Input
+---
+
+### STRICT OUTPUT RULES (VERY IMPORTANT)
+
+- Return ONLY ONE valid JSON object
+- Do NOT include multiple JSON objects
+- Do NOT include any extra text before or after JSON
+- Do NOT include markdown (``` or explanations)
+- Do NOT start JSON and continue another JSON block
+- Always ensure JSON is fully valid
+
+---
+
+### INPUT
 
 User Message:
 {user_message}
@@ -102,9 +114,11 @@ Identified Skill:
 Retrieved Knowledge Chunk:
 {retrieved_chunk}
 
-### Output
+---
 
-Return a single JSON object with these keys only, and no extra text:
+### OUTPUT
+
+Return a single JSON object with these keys only:
 
 {{
     "emotion": "string",
@@ -113,8 +127,7 @@ Return a single JSON object with these keys only, and no extra text:
     "response": "string"
 }}
 
-Generate the final response for the user only. Do not include headings, labels, or meta-commentary outside the JSON object."""
-
+No extra text allowed."""
 
 # Generic fallbacks used only when the skill provides no responses of its own.
 _GENERIC_FALLBACKS = {
@@ -138,6 +151,13 @@ class GeminiService:
         """
         self.model_name = model_name or GEMINI_MODEL
         self.client = client
+
+        logger.info("=" * 60)
+        logger.info("GEMINI SERVICE INITIALIZED")
+        logger.info(f"Model: {self.model_name}")
+        logger.info(f"API Key Present: {bool(GOOGLE_API_KEY)}")
+        logger.info(f"Client Created: {self.client is not None}")
+        logger.info("=" * 60)
 
     @staticmethod
     def _format_safety_assessment(safety: Optional[Dict[str, Any]]) -> str:
@@ -272,85 +292,140 @@ class GeminiService:
         }
 
     def _call_gemini(
-        self,
-        prompt: str,
-        temperature: float = 0.7,
-        response_mime_type: Optional[str] = None,
+      self,
+      prompt: str,
+      temperature: float = 0.7,
+      response_mime_type: Optional[str] = None,
+      user_message: Optional[str] = None,
+      safety: Optional[str] = None,
+      emotion: Optional[str] = None,
+      skill: Optional[str] = None,
+      chunk: Optional[str] = None,
     ):
-        global GEMINI_DISABLED
+      global GEMINI_DISABLED
 
-        if not self.client or GEMINI_DISABLED:
-            return None
+      logger.info("Calling Gemini API...")
+      logger.info(f"Model: {self.model_name}")
+      logger.info(f"Gemini Disabled: {GEMINI_DISABLED}")
 
-        for attempt in range(3):
-            try:
-                return self.client.models.generate_content(
-                    model=self.model_name,
-                    contents=prompt,
-                    config={
-                        "temperature": temperature,
-                        "top_p": 0.95,
-                        "max_output_tokens": 500,
-                        **({"response_mime_type": response_mime_type} if response_mime_type else {}),
-                    },
-                )
-            except ClientError as exc:
-                if "429" in str(exc):
-                    GEMINI_DISABLED = True
-                    logger.warning("Gemini quota exhausted; disabling further Gemini calls")
-                    return None
-                if "503" in str(exc) or getattr(exc, "status_code", None) == 503:
-                    if attempt < 2:
-                        wait_seconds = (2 ** attempt) + random.uniform(0, 1)
-                        logger.warning(
-                            "Gemini returned 503; retrying in %.2f seconds (attempt %s/3)",
-                            wait_seconds,
-                            attempt + 1,
-                        )
-                        time.sleep(wait_seconds)
-                        continue
-                    logger.warning("Gemini returned 503 after retries")
-                    return None
-                raise
-            except ServerError as exc:
-                if "503" in str(exc) or getattr(exc, "status_code", None) == 503:
-                    if attempt < 2:
-                        wait_seconds = (2 ** attempt) + random.uniform(0, 1)
-                        logger.warning(
-                            "Gemini returned 503; retrying in %.2f seconds (attempt %s/3)",
-                            wait_seconds,
-                            attempt + 1,
-                        )
-                        time.sleep(wait_seconds)
-                        continue
-                    logger.warning("Gemini returned 503 after retries")
-                    return None
-                raise
-
+      if not self.client:
+        logger.error("FALLBACK: Gemini client is None")
         return None
 
+      if GEMINI_DISABLED:
+        logger.error("FALLBACK: Gemini disabled")
+        return None
+        
+
+      for attempt in range(3):
+        request_id = str(uuid.uuid4())
+
+        # Structured logging of all request components
+        logger.info("=" * 80)
+        logger.info(f"REQUEST_ID: {request_id}")
+        logger.info("========== GEMINI REQUEST START ==========")
+        logger.info(f"Model: {self.model_name}")
+        logger.info(f"Attempt: {attempt + 1}")
+        logger.info(f"Temperature: {temperature}")
+        logger.info("")
+        logger.info("---------- INPUT COMPONENTS ----------")
+        logger.info(f"USER MESSAGE: {user_message if user_message else '(not provided)'}")
+        logger.info(f"SAFETY: {safety if safety else '(not provided)'}")
+        logger.info(f"EMOTION: {emotion if emotion else '(not provided)'}")
+        logger.info(f"SKILL: {skill if skill else '(not provided)'}")
+        logger.info(f"CHUNK: {chunk if chunk else '(not provided)'}")
+        logger.info("")
+        logger.info("---------- FINAL PROMPT SENT TO GEMINI ----------")
+        logger.info(prompt)
+        logger.info("========== GEMINI REQUEST END ==========")
+        logger.info("=" * 80)
+
+        try:
+            response = self.client.models.generate_content(
+                
+                model=self.model_name,
+                contents=prompt,
+                config={
+                    "temperature": 0.2,
+                    "top_p": 0.95,
+                    "max_output_tokens": 1024,
+                    **({"response_mime_type": response_mime_type} if response_mime_type else {}),
+            },
+            )
+
+            logger.info("Gemini API Success")
+
+            try:
+                logger.info("=" * 80)
+                logger.info(f"REQUEST_ID: {request_id}")
+                logger.info("GEMINI RESPONSE")
+                logger.info(response.text[:2000])
+                logger.info("=" * 80)
+
+            except Exception:
+                pass
+
+            return response
+
+        except ClientError as exc:
+            if "429" in str(exc):
+                GEMINI_DISABLED = True
+                logger.warning("Gemini quota exhausted; disabling further Gemini calls")
+                return None
+
+            if "503" in str(exc) or getattr(exc, "status_code", None) == 503:
+                if attempt < 2:
+                    wait_seconds = (2 ** attempt) + random.uniform(0, 1)
+                    logger.warning("Gemini returned 503; retrying in %.2f seconds", wait_seconds)
+                    time.sleep(wait_seconds)
+                    continue
+                return None
+
+            raise
+
+        except ServerError as exc:
+            if "503" in str(exc) or getattr(exc, "status_code", None) == 503:
+                if attempt < 2:
+                    wait_seconds = (2 ** attempt) + random.uniform(0, 1)
+                    logger.warning("Gemini returned 503; retrying in %.2f seconds", wait_seconds)
+                    time.sleep(wait_seconds)
+                    continue
+                return None
+            raise
+
+        except Exception as exc:
+            exc_str = str(exc)
+
+            if "429" in exc_str or "RESOURCE_EXHAUSTED" in exc_str.upper():
+                GEMINI_DISABLED = True
+                logger.warning("Gemini quota exhausted; disabling further calls")
+                return None
+
+            if attempt < 2:
+                wait_seconds = (2 ** attempt) + random.uniform(0, 1)
+                logger.warning("Error: %s retrying in %.2f seconds", exc, wait_seconds)
+                time.sleep(wait_seconds)
+                continue
+
+            raise
+
+      return None
+
     @staticmethod
-    def _extract_json_payload(response_text: str) -> Dict[str, Any]:
-        """Extract a JSON object from Gemini output.
+    def _extract_json_payload(response_text: str):
+        import json
 
-        Gemini can occasionally return markdown fences, prose around the JSON,
-        or an empty body. This helper normalizes the response before parsing.
-        """
-        cleaned_text = (response_text or "").strip()
-        if not cleaned_text:
-            raise ValueError("Empty structured response from Gemini")
+        text = response_text.strip()
 
-        if cleaned_text.startswith("```"):
-            cleaned_text = cleaned_text.split("```", 2)[1].strip()
-            if cleaned_text.startswith("json"):
-                cleaned_text = cleaned_text[4:].strip()
+        start = text.find("{")
+        end = text.rfind("}")
 
-        json_start = cleaned_text.find("{")
-        json_end = cleaned_text.rfind("}")
-        if json_start == -1 or json_end == -1 or json_end <= json_start:
-            raise ValueError("Gemini response did not contain a JSON object")
+        if start == -1 or end == -1:
+            raise ValueError("No JSON found")
 
-        return json.loads(cleaned_text[json_start : json_end + 1])
+        json_str = text[start:end+1]
+
+        return json.loads(json_str)
 
     def build_prompt(
         self,
@@ -385,6 +460,11 @@ class GeminiService:
         self,
         prompt: str,
         temperature: float = 0.7,
+        user_message: Optional[str] = None,
+        safety: Optional[str] = None,
+        emotion: Optional[str] = None,
+        skill: Optional[str] = None,
+        chunk: Optional[str] = None,
     ) -> str:
         """
         Generate a response using Gemini.
@@ -392,12 +472,25 @@ class GeminiService:
         Args:
             prompt: The prompt to send to Gemini
             temperature: Controls randomness (0.0-1.0)
+            user_message: Original user message for logging
+            safety: Safety assessment result for logging
+            emotion: Detected emotion for logging
+            skill: Identified skill for logging
+            chunk: Retrieved knowledge chunk for logging
 
         Returns:
             Generated response text
         """
         try:
-            response = self._call_gemini(prompt, temperature=temperature)
+            response = self._call_gemini(
+                prompt,
+                temperature=temperature,
+                user_message=user_message,
+                safety=safety,
+                emotion=emotion,
+                skill=skill,
+                chunk=chunk,
+            )
 
             if response is None:
                 logger.warning("Gemini unavailable, falling back to safe default response")
@@ -432,6 +525,11 @@ class GeminiService:
         prompt: str,
         output_format: str = "text",
         fallback_bundle: Optional[Dict[str, Any]] = None,
+        user_message: Optional[str] = None,
+        safety: Optional[str] = None,
+        emotion: Optional[str] = None,
+        skill: Optional[str] = None,
+        chunk: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Generate a structured response (JSON format).
@@ -439,6 +537,12 @@ class GeminiService:
         Args:
             prompt: The prompt to send to Gemini
             output_format: Expected output format (text, json)
+            fallback_bundle: Fallback response if Gemini fails
+            user_message: Original user message for logging
+            safety: Safety assessment result for logging
+            emotion: Detected emotion for logging
+            skill: Identified skill for logging
+            chunk: Retrieved knowledge chunk for logging
 
         Returns:
             Parsed response as dictionary
@@ -451,9 +555,16 @@ class GeminiService:
             response = self._call_gemini(
                 formatted_prompt,
                 response_mime_type="application/json" if output_format == "json" else None,
+                user_message=user_message,
+                safety=safety,
+                emotion=emotion,
+                skill=skill,
+                chunk=chunk,
             )
 
             if response is None:
+                logger.error("FALLBACK USED: response is None")
+                
                 if fallback_bundle:
                     return fallback_bundle
                 raise ValueError("Empty structured response from Gemini")
@@ -484,6 +595,13 @@ class GeminiService:
                         return merged
                     return payload
                 except (json.JSONDecodeError, ValueError) as parse_error:
+                    
+                    logger.error("=" * 60)
+                    logger.error("INVALID JSON FROM GEMINI")
+                    logger.error(f"Parse Error: {parse_error}")
+                    logger.error(f"Raw Response: {response_text}")
+                    logger.error("=" * 60)
+
                     if fallback_bundle:
                         logger.debug(
                             "Gemini structured response was not valid JSON; using fallback: %s",
@@ -506,6 +624,7 @@ class GeminiService:
 
             return {"response": response}
         except Exception as e:
+            logger.exception("STRUCTURED GENERATION FAILED")
             print(f"Error generating structured response: {e}")
             if fallback_bundle:
                 return fallback_bundle
@@ -559,6 +678,11 @@ Return a single JSON object with these keys only:
                 prompt,
                 temperature=0.2,
                 response_mime_type="application/json",
+                user_message=message,
+                safety="(emotion classification - no safety check)",
+                emotion="(classifying emotion)",
+                skill="emotion classification",
+                chunk="(no knowledge chunk needed)",
             )
             if response and response.text:
                 payload = self._extract_json_payload(response.text)

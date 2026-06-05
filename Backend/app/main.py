@@ -4,6 +4,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.routes.auth_routes import router as auth_router
 from app.routes.chat_routes import router as chat_router
 from app.core.config import CORS_ORIGINS
+import logging
+
+# ============= Configure Logging =============
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title="Empathy for Learning API",
@@ -47,9 +55,19 @@ async def forbidden_exception_handler(request: Request, exc: Exception):
     )
 
 
+import traceback
+
 @app.exception_handler(Exception)
 async def general_exception_handler(request: Request, exc: Exception):
-    """Handle 500 Internal Server errors"""
+    """Handle 500 Internal Server errors with logging"""
+    
+    print("=" * 60)
+    print("UNHANDLED EXCEPTION CAUGHT")
+    print(f"Path: {request.url}")
+    print(f"Error: {str(exc)}")
+    print(traceback.format_exc())
+    print("=" * 60)
+
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={
@@ -57,7 +75,6 @@ async def general_exception_handler(request: Request, exc: Exception):
             "status": "error"
         }
     )
-
 
 # ============= Route Inclusion =============
 
