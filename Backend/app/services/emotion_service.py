@@ -7,13 +7,12 @@ import json
 import logging
 import re
 from typing import Dict, Any, Optional
-import app.services.gemini_service as gemini_service
 
 logger = logging.getLogger(__name__)
 
 
 class EmotionService:
-    """Service for detecting emotions in user messages using Gemini and hybrid heuristics."""
+    """Service for detecting emotions in user messages using hybrid rules and keywords."""
 
     # -----------------------------
     # Weighted keyword model
@@ -262,16 +261,12 @@ class EmotionService:
         ]
     }
 
-    def __init__(self, gemini_svc: Optional[gemini_service.GeminiService] = None):
+    def __init__(self):
         """Initialize the Emotion Service."""
-        self.gemini_svc = gemini_svc or gemini_service.GeminiService()
 
     def detect_emotion(self, message: str) -> Dict[str, Any]:
         """
-        Detect emotion from user message using Gemini, falling back to hybrid rules model on failure.
-
-        Shares the GEMINI_DISABLED flag with gemini_service so that a 429 rate-limit
-        error in either service immediately suppresses further Gemini calls across both.
+        Detect emotion from user message using hybrid rules and keywords.
 
         Args:
             message: User's message text
@@ -279,17 +274,6 @@ class EmotionService:
         Returns:
             Dict with emotion, confidence, and reasoning
         """
-        if not gemini_service.GEMINI_DISABLED:
-            try:
-                payload = self.gemini_svc.classify_emotion(message)
-                if payload:
-                    return payload
-            except Exception as e:
-                logger.warning(
-                    f"Gemini emotion detection failed: {e}. Falling back to hybrid model."
-                )
-
-        # Fallback to Hybrid Rules + Keywords + Intensity model
         return self._hybrid_fallback_detection(message)
 
     def _hybrid_fallback_detection(self, message: str) -> Dict[str, Any]:

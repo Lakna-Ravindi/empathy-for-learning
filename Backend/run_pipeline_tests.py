@@ -220,22 +220,11 @@ def main():
             response_text = fallback_bundle["response"]
         else:
             resp_source = "Live Gemini API"
-            prompt = gemini_service.build_prompt(
-                message=msg,
-                emotion=emotion_res,
-                skill=skill_obj,
-                context=[], # No RAG context for simple test
-                safety=safety_check
-            )
             structured = gemini_service.generate_structured(
-                prompt,
-                output_format="json",
+                message=msg,
+                context=[],
+                safety=safety_check,
                 fallback_bundle=fallback_bundle,
-                user_message=msg,
-                safety=gemini_service._format_safety_assessment(safety_check),
-                emotion=gemini_service._format_detected_emotion(emotion_res),
-                skill=gemini_service._format_identified_skill(skill_obj),
-                chunk=gemini_service._format_retrieved_chunk([]),
             )
             response_text = structured.get("response", fallback_bundle["response"])
 

@@ -9,8 +9,6 @@ from typing import Any, Optional, Dict
 import logging
 from bson import ObjectId
 
-from app.services.emotion_service import EmotionService
-from app.services.skill_service import SkillService
 from app.services.rag_service import RAGService
 from app.services.gemini_service import GeminiService
 from app.services.safety_service import SafetyService
@@ -31,8 +29,6 @@ def convert_objectid_to_string(doc: Dict[str, Any]) -> Dict[str, Any]:
 
 
 # Initialize services
-emotion_service = EmotionService()
-skill_service = SkillService()
 rag_service = RAGService()
 gemini_service = GeminiService()
 safety_service = SafetyService()
@@ -61,11 +57,9 @@ async def chat(request: ChatRequest, current_user = Depends(get_current_user)):
     
     Flow:
     1. Safety check
-    2. Emotion detection
-    3. Skill mapping
-    4. RAG retrieval
-    5. Response generation
-    6. Storage
+    2. RAG retrieval
+    3. Single Gemini response generation
+    4. Storage
     
     Args:
         request: Chat request with message
@@ -107,59 +101,37 @@ async def chat(request: ChatRequest, current_user = Depends(get_current_user)):
                 confidence=1.0
             )
         
-        # 2. Detect emotion using Gemini
-        emotion_result = emotion_service.detect_emotion(message)
-        emotion = emotion_result.get("emotion", "neutral")
-        confidence = emotion_result.get("confidence", 0.5)
-        
-        # 3. Map emotion to skill
-        skill_obj = skill_service.get_skill(emotion)
-        skill_name = skill_obj.get("skill", "General Support") if skill_obj else "General Support"
-        
-        # 4. Retrieve relevant knowledge
+# 2. Retrieve relevant knowledge
         context = rag_service.search(
             query=message,
-            skill=skill_name,
             top_k=5
         )
 
         logger.debug("RAG context (top chunk): %s", context[0] if context else None)
-        
-        # 5. Build prompt with safety, emotion, skill, and top RAG chunk
-        prompt = gemini_service.build_prompt(
-            message=message,
-            emotion=emotion_result,
-            skill=skill_obj,
-            context=context,
-            safety=safety_check,
-        )
-        
+
         fallback_bundle = gemini_service.build_fallback_response(
-            emotion=emotion_result,
-            skill=skill_obj,
             risk_level=risk_level,
             message=message,
         )
 
-        # 6. Generate a single structured response from Gemini, with a local fallback
+        # 3. Generate a single structured response from Gemini, with a local fallback
         structured = gemini_service.generate_structured(
-            prompt,
-            output_format="json",
+            message=message,
+            context=context,
+            safety=safety_check,
             fallback_bundle=fallback_bundle,
-            user_message=message,
-            safety=gemini_service._format_safety_assessment(safety_check),
-            emotion=gemini_service._format_detected_emotion(emotion_result),
-            skill=gemini_service._format_identified_skill(skill_obj),
-            chunk=gemini_service._format_retrieved_chunk(context),
         )
         logger.debug("Gemini structured output: %s", structured)
 
         if isinstance(structured, dict):
-            emotion = structured.get("emotion", emotion)
-            confidence = structured.get("confidence", confidence)
-            skill_name = structured.get("skill", skill_name)
+            emotion = structured.get("emotion", "neutral")
+            confidence = structured.get("confidence", 0.5)
+            skill_name = structured.get("skill", "General Support")
             response_text = structured.get("response", fallback_bundle["response"])
         else:
+            emotion = "neutral"
+            confidence = 0.5
+            skill_name = "General Support"
             response_text = fallback_bundle["response"]
 
         logger.debug("Generated response: %s", response_text)

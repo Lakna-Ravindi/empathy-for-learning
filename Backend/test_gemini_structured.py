@@ -20,7 +20,7 @@ def run_case(name: str, stub_response: str, expected_error: str) -> None:
     service = GeminiService()
     service._call_gemini = lambda prompt, temperature=0.7, response_mime_type=None, user_message=None, safety=None, emotion=None, skill=None, chunk=None: FakeResponse(stub_response)
 
-    result = service.generate_structured("Test prompt", output_format="json")
+    result = service.generate_structured("Test prompt", [])
 
     assert "error" in result, f"{name}: expected error in result, got {result}"
     assert expected_error in result["error"], f"{name}: unexpected error {result['error']}"
@@ -55,7 +55,7 @@ def test_retry_on_connection_error() -> None:
     time.sleep = lambda secs: None
     
     try:
-        result = service.generate_structured("Test prompt", output_format="json")
+        result = service.generate_structured("Test prompt", [])
         assert result == {"response": "Recovered response"}, f"Expected recovered response, got {result}"
         assert service.client.models.call_count == 2, f"Expected 2 calls, got {service.client.models.call_count}"
         print("retry-on-connection-error: OK")
@@ -70,7 +70,7 @@ def main() -> None:
 
     service = GeminiService()
     service._call_gemini = lambda prompt, temperature=0.7, response_mime_type=None, user_message=None, safety=None, emotion=None, skill=None, chunk=None: FakeResponse('{"response": "All good"}')
-    result = service.generate_structured("Test prompt", output_format="json")
+    result = service.generate_structured("Test prompt", [])
     assert result == {"response": "All good"}, result
     print("valid-json-response: OK")
     
